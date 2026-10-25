@@ -32,8 +32,9 @@ check("MainActivity: every pill is a Pill with a fixed 30 dp row (the row's heig
       "right.addView(p, llp(-2, dp(Pill.HEIGHT), dp(10), 0, 0, 0))" in main and "TextView tasks" not in main and "TextView saver" not in main)
 check("MainActivity: D-pad ends and order are unchanged (wireFocus and moveFocusSideways still walk the pills list)",
       "p.setNextFocusLeftId(i == 0 ? p.getId() : pills.get(i - 1).getId())" in main and "int next = right ? index - 1 : index + 1;" in main)
-check("MainActivity: the sleep and network names are set on the pill, not drawn on the row", "sleepPill.setLabel(Digits.of(PillText.sleep(left)))" in main
-      and "wifiPill.setLabel(PillText.network(" in main)
+check("MainActivity: the sleep and network names are localized on the pill, not drawn on the row",
+      "sleepPill.setLabel(UiLanguage.of(Digits.of(PillText.sleep(left))))" in main
+      and "wifiPill.setLabel(UiLanguage.of(PillText.network(" in main)
 
 if not shutil.which("javac"):
     print("SKIP pill text: no javac here")
