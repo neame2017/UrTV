@@ -251,4 +251,3 @@ the Saudi Quran Radio stream is via [radiojar](https://www.radiojar.com/). Adhan
 (Public Domain Mark 1.0).
 Home screen adapted from [mihirgupta0900/tv-home](https://github.com/mihirgupta0900/tv-home) (MIT,
 `android/launcher/LICENSE-tv-home`). Package ratings from [UAD-ng](https://github.com/Universal-Debloater-Alliance/universal-android-debloater-next-generation).
-
