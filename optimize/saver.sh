@@ -30,7 +30,8 @@
 #   optimize/saver.sh cardstyle glass1             look of the card beside the clock: current dark1 glass1 dark3 glass3
 #   optimize/saver.sh national off                 the quiet green look on National Day (21-25 Sep) and Founding Day (20-24 Feb): auto (default) or off
 #   optimize/saver.sh digits latin                 numbers: hindi = ١٢٣ (default), latin = 123
-#   optimize/saver.sh markets tasi,gold,btc        top left, up to 4 in order: tasi aramco spx btc gold silver xrp (default tasi,spx,btc)
+#   optimize/saver.sh language en                  app language: ar (default) or en
+#   optimize/saver.sh markets gold18,gold21,gold22,gold24  top left; also tasi aramco spx btc gold silver xrp
 #   optimize/saver.sh mkstyle prices               markets: arrows (▲▼ only, default) or prices (price and day's change)
 #   optimize/saver.sh stocks 2222 1120 AAPL        watchlist of the stocks card (card stocks): up to 8 Tadawul codes (4 digits) or US tickers
 #   optimize/saver.sh tasks list                   «المهام» kept on the TV; N = the number list shows
@@ -164,6 +165,7 @@ case "${1:-}" in
     send SET "$extra" ;;
   national) set1 national "${2:?usage: optimize/saver.sh national auto|off}" ;;
   digits)   set1 digits "${2:?usage: optimize/saver.sh digits latin}" ;;
+  language) set1 language "${2:?usage: optimize/saver.sh language ar|en}" ;;
   idle)
     # the app may change the TV's timer only if the owner allowed it; the shell always may
     v=$(quote "${2:?usage: optimize/saver.sh idle 10}") || exit 1

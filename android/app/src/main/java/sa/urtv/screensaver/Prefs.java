@@ -75,6 +75,8 @@ final class Prefs {
     // digits on the screen (sent to the page as #digits=; hindi is what it always showed)
     static final String[][] DIGITS = {{"hindi", "هندية ١٢٣"}, {"latin", "عربية 123"}};
 
+    static final String[][] LANGUAGES = {{"ar", "العربية"}, {"en", "English"}};
+
     // the national days (sent to the page as #national=; auto shows them on their days, off never)
     static final String[][] NATIONAL = {{"auto", "تلقائي"}, {"off", "إيقاف"}};
 
@@ -86,6 +88,8 @@ final class Prefs {
     static final String[][] MARKETS = {
         {"tasi", "تاسي"}, {"aramco", "أرامكو"}, {"spx", "S&P 500"}, {"btc", "بيتكوين"},
         {"gold", "الذهب (الجرام بالريال)"}, {"silver", "الفضة (الجرام بالريال)"}, {"xrp", "ريبل"},
+        {"gold18", "ذهب عيار ١٨ (ريال/غرام)"}, {"gold21", "ذهب عيار ٢١ (ريال/غرام)"},
+        {"gold22", "ذهب عيار ٢٢ (ريال/غرام)"}, {"gold24", "ذهب عيار ٢٤ (ريال/غرام)"},
     };
     static final int MAX_MARKETS = 4;
     static final String DEFAULT_MARKETS = "tasi,spx,btc";
@@ -253,6 +257,14 @@ final class Prefs {
     String digits() { return sp.getString("digits", "hindi"); }
     void setDigits(String v) { sp.edit().putString("digits", v).apply(); }
 
+    String language() { return sp.getString("language", "ar"); }
+    void setLanguage(String v) {
+        if (!"ar".equals(v) && !"en".equals(v)) return;
+        SharedPreferences.Editor edit = sp.edit().putString("language", v);
+        if ("en".equals(v)) edit.putString("digits", "latin");
+        edit.apply();
+    }
+
     static String digitsLabel(String v) {
         for (String[] d : DIGITS) if (d[0].equals(v)) return d[1];
         return DIGITS[0][1];
@@ -380,6 +392,7 @@ final class Prefs {
             + "&minrating=" + minRating()
             + "&photos=" + photoMinutes()
             + "&digits=" + digits()
+            + "&language=" + language()
             + "&cardstyle=" + cardStyle()
             + "&adhanbar=" + (adhanBar() ? "1" : "0")
             + "&yearstrip=" + (yearStrip() ? "1" : "0")

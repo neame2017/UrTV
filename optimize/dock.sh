@@ -9,6 +9,7 @@
 #   optimize/dock.sh show PKG ...          put these on it, even against the rules (the TV's own home doesn't list them)
 #   optimize/dock.sh names                 every app's name: package | shown | its own | from (agent, own, table)
 #   optimize/dock.sh name PKG 'الاسم' ...   give apps an Arabic name on this TV (pairs; '' = its usual name again)
+#   optimize/dock.sh en-name PKG 'Name' ... give apps an English name on this TV (pairs; '' = its usual name again)
 #   optimize/dock.sh names-clear           every app back to its usual name
 #   optimize/dock.sh sleep 30              «مؤقت النوم» for the whole TV: 15 30 60 90, or any 1 to 600 minutes; then the TV goes to sleep
 #   optimize/dock.sh sleep                 how the timer stands: minutes left, and what its end will do
@@ -58,7 +59,8 @@ case "${1:-}:$#" in
     echo "the sleep service is on: the end of «مؤقت النوم» turns the screen off" ;;
   names:1) send NAMES ;;
   names-clear:1) send CLEAR_NAMES ;;
-  name:*)
+  name:*|en-name:*)
+    action=$1
     shift
     [ $# -gt 0 ] && [ $(( $# % 2 )) -eq 0 ] || { echo "usage: optimize/dock.sh name PKG 'الاسم' [PKG 'الاسم' ...]"; exit 1; }
     pairs=""
@@ -68,6 +70,6 @@ case "${1:-}:$#" in
       pairs="$pairs${pairs:+;}$1|$2"
       shift 2
     done
-    send SET_NAMES "--es names '$pairs'" ;;
+    if [ "$action" = en-name ]; then send SET_ENGLISH_NAMES "--es names '$pairs'"; else send SET_NAMES "--es names '$pairs'"; fi ;;
   *) sed -n '2,17p' "$0"; exit 1 ;;
 esac

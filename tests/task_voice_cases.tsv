@@ -1,6 +1,9 @@
 # What the home app understands from speech (android/launcher/.../TaskVoice.java).
 # heard <TAB> tasks (";"-separated; a leading "-" = already done) <TAB> expected: KIND, index, text
 أضف مهمة اشتري خبز		ADD	-1	اشتري خبز
+Add a task buy milk		ADD	-1	buy milk
+Finish the task buy milk	buy milk;call home	DONE	0	buy milk
+Delete a task buy milk	buy milk;call home	DELETE	0	buy milk
 أضف اشتري حليب		ADD	-1	اشتري حليب
 اضف مهمه موعد المستشفى الساعة 5		ADD	-1	موعد المستشفى الساعة 5
 أضف		NONE	-1	

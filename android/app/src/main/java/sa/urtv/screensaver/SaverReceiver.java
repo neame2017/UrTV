@@ -195,6 +195,9 @@ public class SaverReceiver extends BroadcastReceiver {
         String digits = i.getStringExtra("digits");
         if (digits != null && !isChoice(Prefs.DIGITS, digits))
             return "error: digits is one of " + choices(Prefs.DIGITS);
+        String language = i.getStringExtra("language");
+        if (language != null && !isChoice(Prefs.LANGUAGES, language))
+            return "error: language is one of " + choices(Prefs.LANGUAGES);
         String national = i.getStringExtra("national");
         if (national != null && !isChoice(Prefs.NATIONAL, national))
             return "error: national is one of " + choices(Prefs.NATIONAL);
@@ -277,6 +280,7 @@ public class SaverReceiver extends BroadcastReceiver {
         if (rating != null) p.setMinRating(rating);
         if (photos != null) p.setPhotoMinutes(photos);
         if (digits != null) p.setDigits(digits);
+        if (language != null) p.setLanguage(language);
         if (national != null) p.setNational(national);
         if (cardStyle != null) p.setCardStyle(cardStyle);
         if (mkStyle != null) p.setMkStyle(mkStyle);
@@ -393,6 +397,7 @@ public class SaverReceiver extends BroadcastReceiver {
             + "\nminrating: " + p.minRating()
             + "\nphotos: " + p.photoMinutes()
             + "\ndigits: " + p.digits()
+            + "\nlanguage: " + p.language()
             + "\nnational: " + p.national()
             + "\ncardstyle: " + p.cardStyle()
             + "\nmarkets: " + Prefs.join(p.markets(), ",") + "\nmkstyle: " + p.mkStyle()

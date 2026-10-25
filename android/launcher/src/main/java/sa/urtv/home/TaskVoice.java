@@ -62,11 +62,13 @@ final class TaskVoice {
         String verb = word(said.get(0));
         int skip = 1;
         Kind kind;
-        if (verb.equals("اضف")) kind = Kind.ADD;
-        else if (verb.equals("خلصت") || verb.equals("تم")) kind = Kind.DONE;
-        else if (verb.equals("احذف")) kind = Kind.DELETE;
+        if (verb.equals("اضف") || verb.equals("add")) kind = Kind.ADD;
+        else if (verb.equals("خلصت") || verb.equals("تم") || verb.equals("finish") || verb.equals("done") || verb.equals("complete")) kind = Kind.DONE;
+        else if (verb.equals("احذف") || verb.equals("delete") || verb.equals("remove")) kind = Kind.DELETE;
         else return new Result(Kind.NONE, "", -1);
+        if (said.size() > skip && (word(said.get(skip)).equals("a") || word(said.get(skip)).equals("the"))) skip++;
         if (said.size() > skip && word(said.get(skip)).equals("مهمه")) skip++;
+        if (said.size() > skip && word(said.get(skip)).equals("task")) skip++;
         if (kind == Kind.DONE && said.size() > skip && word(said.get(skip)).equals("من")) skip++;
         StringBuilder rest = new StringBuilder();
         for (int k = skip; k < said.size(); k++) rest.append(rest.length() > 0 ? " " : "").append(said.get(k));

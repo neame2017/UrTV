@@ -44,4 +44,5 @@ final class ConfigSnapshot {
     String[] cityZone() { return fragment == null ? null : ClockZone.parse(fragment); }
 
     boolean latin() { return fragment != null && (fragment.contains("&digits=latin") || fragment.startsWith("digits=latin")); }
+    boolean english() { return fragment != null && (fragment.contains("&language=en") || fragment.startsWith("language=en")); }
 }

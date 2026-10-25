@@ -6,6 +6,8 @@
 
 <p align="center">An Arabic home screen and a Saudi screensaver for Android TV / Google TV, and a safe speed-up.<br>Your AI agent sets it all up.</p>
 
+**Personal edition for neame2017.** This public fork is maintained independently. Its English interface, bilingual Quran and hadith cards, and gold-karat prices are built and updated from this repository. It uses the OFL-licensed Noto Sans Arabic font. Original project: [tshi-dev/UrTV](https://github.com/tshi-dev/UrTV).
+
 <p align="center"><img src=".github/screens/before-after-home.jpg" alt="Before: Google TV home. After: the تلفزيونك home screen" width="100%"></p>
 <p align="center"><img src=".github/screens/before-after-screensaver.jpg" alt="Before: the Google screensaver. After: شاشة تلفزيونك" width="100%"></p>
 
@@ -28,7 +30,7 @@
 
 ### ③ الصق هذا
 
-> ركّب تلفزيوني من https://github.com/tshi-dev/UrTV: انسخ المستودع واتبع `docs/SETUP-PROMPT.md` خطوة بخطوة. أنت على كمبيوتر متصل بنفس شبكة الواي فاي حقت التلفزيون.
+> ركّب تلفزيوني من https://github.com/neame2017/UrTV: انسخ المستودع واتبع `docs/SETUP-PROMPT.md` خطوة بخطوة. أنت على كمبيوتر متصل بنفس شبكة الواي فاي حقت التلفزيون.
 
 #### وش يصير بعد اللصق؟
 يسألك عن **مدينتك** و**أنديتك**، والتلفزيون يسألك **Allow** مرة وحدة، وبعدها خلّه يشتغل: 40 دقيقة وكم إعادة تشغيل.
@@ -64,7 +66,7 @@ Settings → About → press OK on **Build** 7 times. Then go to **Developer opt
 
 ### ③ Paste this
 
-> Set up my TV with https://github.com/tshi-dev/UrTV: clone it and follow `docs/SETUP-PROMPT.md` step by step. You are on a computer on the same Wi-Fi as the TV.
+> Set up my TV with https://github.com/neame2017/UrTV: clone it and follow `docs/SETUP-PROMPT.md` step by step. You are on a computer on the same Wi-Fi as the TV.
 
 #### What happens after pasting?
 It asks your **city** and your **clubs**, the TV asks **Allow** once, then leave it: 40 minutes, a few restarts.
@@ -95,7 +97,7 @@ screen: [docs/RECREATE-PROMPT.md](docs/RECREATE-PROMPT.md).
 | **Two free apps** | [TV Bro](https://github.com/truefedex/tv-bro), a web browser for the TV, and [SmartTube](https://github.com/yuliskov/SmartTube), YouTube without ads, from their own releases (skip with `SKIP_EXTRAS=1`) | `optimize/install.sh extras` |
 | **Speed-up** | Telemetry, ads and demos off (reversibly), closed apps frozen, Play Store kept from running in the background, faster animations | `optimize/` |
 
-**Download the apps yourself:** [releases/apk-latest](https://github.com/tshi-dev/UrTV/releases/tag/apk-latest)
+**Download the apps yourself:** [releases/apk-latest](https://github.com/neame2017/UrTV/releases/tag/apk-latest)
 (install with `adb install`; the agent route above also sets everything up).
 Every build is also kept as a numbered release (`v3.N`, the screensaver and home version), to go back
 to one: `APK_TAG=v3.N optimize/install.sh all`.
@@ -133,7 +135,7 @@ Everything is scriptable over ADB, made for slow Wi-Fi (retries, resumable uploa
 | `optimize/run.sh` | the whole setup; run again after any failure to continue · `status` · `again` after a TV system update (redo all, settings kept) |
 | `docs/FEATURES.md` | كل ميزة بالعربي: وش تسوي، ووين تغيّرها، ووش يكتب الوكيل |
 | `docs/SETTINGS.md` | every setting and feature with its command, for agents: use these, never build your own |
-| `optimize/saver.sh` | screensaver settings: `show`, `cities`, `city`, `find-team`, `teams`, `leagues`, `card`, `home-card`, `greeting`, `events`, `genres`, `langs`, `minrating`, `photos`, `idle`, `digits`, `national`, `cardstyle`, `markets`, `mkstyle`, `stocks`, `slot`, `countdown`, `tasks`, `update` |
+| `optimize/saver.sh` | screensaver settings: `show`, `cities`, `city`, `find-team`, `teams`, `leagues`, `card`, `home-card`, `greeting`, `events`, `genres`, `langs`, `minrating`, `photos`, `idle`, `digits`, `language`, `national`, `cardstyle`, `markets`, `mkstyle`, `stocks`, `slot`, `countdown`, `tasks`, `update` |
 | `optimize/photos.sh` | the owner's own photos, 1 to 10: `add FILE...`, `list`, `del N`, `clear`, `mode mix\|only`, `show` |
 | `optimize/dock.sh` | favourites row: `show`, `apps`, `set`, `reset`; `hidden`, `hide PKG`, `show PKG` for apps left off the home screen |
 | `optimize/music.sh` | «تلاوة وأذان» over ADB: `status`, `reciters`, `stations`, `surah`, `radio`, `pause`, `resume`, `seek`, `sleep`, `adhan` (`now`, `on`/`off`, `voice N`) |
@@ -154,7 +156,7 @@ What we learned on real TCL sets, and what must stay on: [docs/OPTIMIZE.md](docs
 src/template.html     the screen (HTML/CSS/JS, no framework); edit this, then run src/build.py
 src/build.py          builds the two pages in dist/
 dist/urtv.html        stand-alone page, fonts and photos inlined: open in any browser (F = full screen), works offline.
-                      Not committed: run python3 src/build.py; without the private Thmanyah files it uses the system's Arabic font
+                      Not committed: run python3 src/build.py; Noto Sans Arabic fonts are included under the OFL
 dist/tv.html          light page the Android app loads (0.3 MB); the app serves fonts and photos from disk
 android/app           the screensaver app (sa.urtv.screensaver): DreamService, settings, auto-update
 android/launcher      the home screen (sa.urtv.home); sa.urtv.home.tilawah is «تلاوة»: catalog, player, adhan
@@ -180,8 +182,8 @@ urtv.html#city=جدة&lat=21.5433&lon=39.1728&tz=Asia/Riyadh&teams=136013,136137
 `teams`: up to 20 TheSportsDB ids in priority order. `leagues`: whole leagues, up to 5, by TheSportsDB's name (`leagues=Saudi-Arabian Pro League,NBA`, default none): every game of every club in them joins the followed teams' games. `panel`: the card beside the clock: `shows`, `prayers`,
 `forecast`, `matches`, `verse`, `wisdom`, `adhkar`, `stocks`, `tasks`, `year` (a dot for every day of the year) or `none`. `events`: other sports beside the teams' games, `f1`, `ufc`, `boxing` (default none; their league ids come from `assets/shared/events.json`, written by CI). `stocks`: the watchlist of the stocks card, up to 8
 (`2222,1120,AAPL,NVDA`: 4 digits is a Tadawul code, letters a US ticker). Also `genres`, `langs`, `shows`, `minrating` for the episodes card,
-`digits`: `hindi` (١٢٣, the default) or `latin` (123), `national`: `auto` (default; on National Day, 21–25 September, and Founding Day, 20–24 February, the accent turns Saudi green with a small line under the dates, and the day itself greets «كل عام والوطن بخير») or `off`, and `cardstyle`: the card's look, `current` (default), `dark1`,
-`glass1`, `dark3` or `glass3`. `markets`: up to 4 of `tasi`, `aramco`, `spx`, `btc`, `gold`, `silver` (per gram, in riyals),
+`digits`: `hindi` (١٢٣, the default) or `latin` (123); `language`: `ar` (default) or `en` (which also selects Latin digits). In English, the verse and hadith card retains the Arabic original alongside a reference-matched English translation. `national`: `auto` (default; on National Day, 21–25 September, and Founding Day, 20–24 February, the accent turns Saudi green with a small line under the dates, and the day itself greets «كل عام والوطن بخير») or `off`, and `cardstyle`: the card's look, `current` (default), `dark1`,
+`glass1`, `dark3` or `glass3`. `markets`: up to 4 of `tasi`, `aramco`, `spx`, `btc`, `gold`, `silver` (per gram, in riyals), `gold18`, `gold21`, `gold22`, `gold24` (indicative spot SAR/gram with 24-hour comparison),
 `xrp`, in order (default `tasi,spx,btc`); `mkstyle`: `arrows` (a ▲/▼ only, the default) or `prices` (the price, the day's change and
 the time of the last update).
 `tasks`: the open «المهام», one per line, URL-encoded.
@@ -241,7 +243,7 @@ the windows (morning: Fajr to Dhuhr, evening: Asr to Maghrib).
 
 ## Credits
 
-Photos: Unsplash photographers, listed in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md). Fonts: Thmanyah, and
+Photos: Unsplash photographers, listed in [docs/PHOTO-CREDITS.md](docs/PHOTO-CREDITS.md). Fonts: [Noto Sans Arabic](assets/fonts/NotoSansArabic-OFL.txt) (OFL), and
 Noto Naskh Arabic for ﷺ ﴿﴾ (OFL, `assets/fonts/`). Quran text: KFGQPC Uthmanic Hafs 3.0 font and text, King Fahd Glorious Quran Printing Complex (free to use and distribute unmodified, [notice](assets/fonts/UthmanicHafs-NOTICE.txt)); «التفسير الميسر» (King Fahd Complex) via api.alquran.cloud.
 Quran recitations and live streams: [mp3quran.net](https://mp3quran.net) and [qurango.net](https://qurango.net);
 the Saudi Quran Radio stream is via [radiojar](https://www.radiojar.com/). Adhan recordings: the

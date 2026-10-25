@@ -8,6 +8,7 @@ Prints one line per check and exits non-zero if any failed. No network.
 import json
 import py_compile
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -33,15 +34,15 @@ def tracked(*globs):
 
 
 # ---- build
-# Thmanyah's licence allows its files only inside a built product: never in this public repository (CI puts them in place)
-leaked = [str(f.relative_to(ROOT)) for f in tracked("*Thmanyah*") + tracked("dist/urtv.html")]
-check("Thmanyah's files and the page that inlines them are not committed", not leaked, leaked)
-missing_fonts = [f for f in ("Thmanyah-Regular.woff2", "ThmanyahDisplay-Bold.woff2") if not (ROOT / "assets/fonts" / f).is_file()]
-check("Thmanyah is in place for the build (CI: the private urtv-fonts checkout; locally: your own copy)", not missing_fonts, missing_fonts)
+# Noto Sans Arabic is OFL licensed and bundled with its license; the inlined page is generated locally.
+check("open font license is included", (ROOT / "assets/fonts/NotoSansArabic-OFL.txt").is_file())
+check("large inlined page is not committed", not tracked("dist/urtv.html"))
+missing_fonts = [f for f in ("NotoSansArabic-Regular.woff2", "NotoSansArabic-Bold.woff2") if not (ROOT / "assets/fonts" / f).is_file()]
+check("Noto Sans Arabic is in place for the build", not missing_fonts, missing_fonts)
 before = {n: (ROOT / "dist" / n).read_bytes() for n in ("tv.html",) if (ROOT / "dist" / n).is_file()}
 r = subprocess.run([sys.executable, "src/build.py"], cwd=ROOT, capture_output=True, text=True)
 check("src/build.py runs", r.returncode == 0, r.stderr[-400:])
-for page, limit in (("urtv.html", 4_000_000), ("tv.html", 650_000)):   # tv.html: about 1000 verses and hadith
+for page, limit in (("urtv.html", 4_000_000), ("tv.html", 1_100_000)):   # tv.html also embeds the matched English translations
     html = (ROOT / "dist" / page).read_text(encoding="utf-8")
     left = sorted(set(re.findall(r"__[A-Z][A-Z_]+__", html)))
     check(f"{page}: every build token replaced", not left, left)
@@ -78,15 +79,21 @@ check("bundled backgrounds exist", all((ROOT / "assets/backgrounds" / b["file"])
 
 # ---- verse and hadith: only checked text, and every character has a glyph
 page = (ROOT / "dist/tv.html").read_text(encoding="utf-8")
-verses = json.loads(re.search(r"const VERSES = (\[.*?\]);", page, re.S).group(1))
-hadith = json.loads(re.search(r"const HADITH = (\[.*?\]);", page, re.S).group(1))
+def embedded_json(name):
+    """The JSON decoder handles a ] or ; inside an English translation string."""
+    marker = "const " + name + " = "
+    value, _ = json.JSONDecoder().raw_decode(page[page.index(marker) + len(marker):])
+    return value
+
+verses = embedded_json("VERSES")
+hadith = embedded_json("HADITH")
 check("verses present", len(verses) >= 200, len(verses))
 check("hadith present", len(hadith) >= 200, len(hadith))
-wisdom = json.loads(re.search(r"const WISDOM = (\[.*?\]);", page, re.S).group(1))
+wisdom = embedded_json("WISDOM")
 check("wisdom: at least 50 sayings, none twice, each short, each with a source",
       len(wisdom) >= 50 and len({w["text"] for w in wisdom}) == len(wisdom)
       and all(0 < len(w["text"]) <= 90 and w["source"] for w in wisdom), len(wisdom))
-adhkar = json.loads(re.search(r"const ADHKAR = (\[.*?\]);", page, re.S).group(1))
+adhkar = embedded_json("ADHKAR")
 adhkar_raw = json.loads((ROOT / "assets/shared/adhkar.json").read_text(encoding="utf-8"))
 BOOKS_OK = ("صحيح البخاري", "صحيح مسلم", "سنن أبي داود", "جامع الترمذي", "سنن النسائي", "سنن ابن ماجه", "سورة")
 check("adhkar data: when, text, count and a source in the six books or the Quran; no text twice",
@@ -140,13 +147,13 @@ check("every narration from the four Sunan carries the scholars' grades", all(h[
       [h["text"][:30] for h in sunan if not h["full"].get("grades")])
 check("every hadith on screen has the Prophet's words and fits the card",
       all(any(k == "q" for k, _ in h["parts"]) and sum(len(t.split()) for _, t in h["parts"]) <= HADITH_MAX_WORDS for h in hadith))
-font = set(TTFont(ROOT / "assets/fonts/Thmanyah-Regular.woff2").getBestCmap())
+font = set(TTFont(ROOT / "assets/fonts/NotoSansArabic-Regular.woff2").getBestCmap())
 marks = set(TTFont(ROOT / "assets/fonts/NotoNaskhArabic-Marks.woff2").getBestCmap())
 text = "".join(v["surah"] for v in verses) + "".join(t for h in hadith for _, t in h["parts"]) \
     + "".join(h["source"] for h in hadith) + "".join(w["text"] + w["source"] for w in wisdom) \
     + "".join(d["source"] + ("" if d.get("quran") else d["text"]) for d in adhkar)
 missing = sorted({c for c in text if not c.isspace() and ord(c) not in font and c not in "ﷺ﴿﴾"})   # those: NotoMarks
-check("verse/hadith text: every character in Thmanyah", not missing, missing)
+check("verse/hadith text: every character in NotoSansArabic", not missing, missing)
 # the Quran text (verses, Quranic adhkar) is the KFGQPC Uthmani text, drawn by its own font, whole and unmodified
 hafs = TTFont(ROOT / "assets/fonts/UthmanicHafs-v30.woff2")
 quran = "".join(v["text"] for v in verses) + "".join(d["text"] for d in adhkar if d.get("quran"))
@@ -164,7 +171,7 @@ check("NotoMarks has ﷺ ﴿ ﴾", {0xFDFA, 0xFD3E, 0xFD3F} <= marks)
 team_ar = json.loads((ROOT / "assets/shared/teams-ar.json").read_text(encoding="utf-8"))
 names = "".join(v for v in (team_ar.values() if isinstance(team_ar, dict) else []) if isinstance(v, str))
 missing = sorted({c for c in names if not c.isspace() and ord(c) not in font})
-check("Arabic team names: every character in Thmanyah", not missing, missing)
+check("Arabic team names: every character in NotoSansArabic", not missing, missing)
 
 # ---- the clubs list (assets/shared/teams.json, built by .github/tools/team_ids.py in CI)
 from team_ids import ARAB, KNOWN, LEAGUES, NATIONAL, NATIONAL_LEAGUE, plain_ar, team_key   # noqa: E402
@@ -202,7 +209,7 @@ for c in clubs:
 check("clubs: no two teams share an Arabic name", all(len(v) == 1 for v in names.values()),
       {k: v for k, v in names.items() if len(v) > 1})
 missing = sorted({ch for c in clubs for ch in c.get("ar", "") if not ch.isspace() and ord(ch) not in font})
-check("clubs: every character of the Arabic names in Thmanyah", not missing, missing)
+check("clubs: every character of the Arabic names in NotoSansArabic", not missing, missing)
 
 # ---- java: a loop over a table (String[][]) must take a row (String[]); the APK build broke on this twice
 java = {f: f.read_text(encoding="utf-8") for f in tracked("android/*.java")}
@@ -219,7 +226,7 @@ bidi = [f"{f.name}: {m.group(0)[:40]}" for f, src in java.items()
 bidi += [f"{x.name}: {m.group(0)[:40]}" for x in (ROOT / "android").glob("*/src/main/res/values*/*.xml")
          for m in re.finditer(r'<string [^>]*>[A-Za-z]+ [\u0600-\u06FF][^<]*', x.read_text(encoding="utf-8"))]
 check("java: no Arabic string starts with a Latin word without an isolate", not bidi, bidi)
-# the select key is «اختيار» in the hints, never the Latin word OK (it falls out of Thmanyah and shows in the system font)
+# the select key is «اختيار» in the hints, never the Latin word OK (it falls out of NotoSansArabic and shows in the system font)
 okword = [f"{f.name}: {m.group(0)[:40]}" for f, src in java.items()
           for m in re.finditer(r'"[^"\n]*[\u0600-\u06FF][^"\n]*"', src) if re.search(r"\bOK\b", m.group(0))]
 okword += [f"{x.name}: {m.group(0)[:40]}" for x in (ROOT / "android").glob("*/src/main/res/values*/*.xml")
@@ -287,7 +294,7 @@ arr = {a.get("name"): [i.text for i in a] for a in cfg.findall("string-array")}
 check("launcher: no dock app is also hidden", not set(arr["dock_apps"]) & set(arr["hidden_apps"]))
 check("launcher: screensaver app not hidden", "sa.urtv.screensaver" not in arr["hidden_apps"])
 
-# Arabic app names: package|name rows; the names are drawn with Thmanyah, so it needs a glyph for each character
+# Arabic app names: package|name rows; the names are drawn with NotoSansArabic, so it needs a glyph for each character
 app_rows = [(i.text or "").split("|", 1) for i in ET.parse(ROOT / "android/launcher/src/main/res/values/app_names.xml")
             .getroot().find("string-array")]
 pkg_re = re.compile(r"^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$")
@@ -297,16 +304,19 @@ check("app names: every key is a valid package name", all(pkg_re.match(r[0]) for
 check("app names: every name has Arabic letters", all(len(r) == 2 and arabic_re.search(r[1]) for r in app_rows), [r[0] for r in app_rows if len(r) < 2 or not arabic_re.search(r[1])])
 check("app names: no package twice", len({r[0] for r in app_rows}) == len(app_rows))
 missing = sorted({c for r in app_rows for c in r[-1] if not c.isspace() and ord(c) not in font})
-check("app names: every character in Thmanyah", not missing, missing)
+check("app names: every character in NotoSansArabic", not missing, missing)
 
 # the launcher Java compiles as far as it can without the Android SDK: errors about missing Android classes are ignored
 java_src = sorted((ROOT / "android/launcher/src/main/java").rglob("*.java"))
-with tempfile.TemporaryDirectory() as out:
-    r = subprocess.run(["javac", "-proc:none", "-Xmaxerrs", "10000", "-encoding", "UTF-8", "-d", out] + [str(f) for f in java_src],
-                       capture_output=True, text=True)
-real = [f"{loc}: {m}" for loc, m in re.findall(r"^(\S+\.java:\d+): error: (.*)$", r.stderr, re.M)
-        if not re.search(r"cannot find symbol|does not override or implement|package .* does not exist|static import only from classes", m)]
-check("launcher Java: no type errors beyond the missing Android classes", not real, real[:8])
+if shutil.which("javac"):
+    with tempfile.TemporaryDirectory() as out:
+        r = subprocess.run(["javac", "-proc:none", "-Xmaxerrs", "10000", "-encoding", "UTF-8", "-d", out] + [str(f) for f in java_src],
+                           capture_output=True, text=True)
+    real = [f"{loc}: {m}" for loc, m in re.findall(r"^(\S+\.java:\d+): error: (.*)$", r.stderr, re.M)
+            if not re.search(r"cannot find symbol|does not override or implement|package .* does not exist|static import only from classes", m)]
+    check("launcher Java: no type errors beyond the missing Android classes", not real, real[:8])
+else:
+    print("SKIP launcher Java type check: javac unavailable (Android CI compiles both APKs)")
 
 # ---- optimize: never disable a kept package
 def pkgs(path):
@@ -325,7 +335,7 @@ for f in tracked("*.py"):
         ok, err = False, e
     check(f"python compiles: {f.relative_to(ROOT)}", ok, err)
 for f in tracked("*.sh"):
-    r = subprocess.run(["bash", "-n", str(f)], capture_output=True, text=True)
+    r = subprocess.run(["bash", "-n", f.relative_to(ROOT).as_posix()], cwd=ROOT, capture_output=True, text=True)
     check(f"bash syntax: {f.relative_to(ROOT)}", r.returncode == 0, r.stderr)
 
 # ---- nothing private or secret in the repo

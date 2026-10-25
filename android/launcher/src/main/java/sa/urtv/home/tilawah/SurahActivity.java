@@ -22,6 +22,7 @@ public class SurahActivity extends Activity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         sa.urtv.home.Digits.init(this);   // the screensaver's «الأرقام» setting
+        sa.urtv.home.UiLanguage.init(this);
         cat = Catalog.get(this);
         int index = getIntent().getIntExtra("reciter", -1);
         if (index < 0 || index >= cat.reciters.size()) { finish(); return; }
@@ -29,13 +30,13 @@ public class SurahActivity extends Activity {
         setContentView(R.layout.activity_surah);
 
         TextView name = findViewById(R.id.reciter);
-        name.setText(reciter.name);
-        Ui.text(name, "ThmanyahDisplay-Bold.otf", 36, R.color.sand);
+        Ui.set(name, reciter.name);
+        Ui.text(name, "NotoSansArabic-Bold.ttf", 36, R.color.sand);
         TextView count = findViewById(R.id.count);
-        count.setText(getString(R.string.surah_count, Ui.arabic(reciter.surahs)));
-        Ui.text(count, "Thmanyah-Regular.otf", 14, R.color.dim);
-        Ui.text((TextView) findViewById(R.id.choose), "Thmanyah-Regular.otf", 16, R.color.gold);
-        Ui.text((TextView) findViewById(R.id.hint), "Thmanyah-Regular.otf", 14, R.color.dim);
+        Ui.set(count, getString(R.string.surah_count, Ui.arabic(reciter.surahs)));
+        Ui.text(count, "NotoSansArabic-Regular.ttf", 14, R.color.dim);
+        Ui.text((TextView) findViewById(R.id.choose), "NotoSansArabic-Regular.ttf", 16, R.color.gold);
+        Ui.text((TextView) findViewById(R.id.hint), "NotoSansArabic-Regular.ttf", 14, R.color.dim);
 
         grid = findViewById(R.id.grid);
         grid.setAdapter(new SurahAdapter());
@@ -96,10 +97,10 @@ public class SurahActivity extends Activity {
                     : LayoutInflater.from(parent.getContext()).inflate(R.layout.item_surah, parent, false);
             TextView number = view.findViewById(R.id.number);
             TextView name = view.findViewById(R.id.name);
-            number.setText(Ui.arabic(position + 1));
-            name.setText(cat.surahName(position + 1));
-            number.setTypeface(Ui.font(SurahActivity.this, "Thmanyah-Regular.otf"));
-            name.setTypeface(Ui.font(SurahActivity.this, "Thmanyah-Medium.otf"));
+            Ui.set(number, Ui.arabic(position + 1));
+            Ui.set(name, cat.surahName(position + 1));
+            number.setTypeface(Ui.font(SurahActivity.this, "NotoSansArabic-Regular.ttf"));
+            name.setTypeface(Ui.font(SurahActivity.this, "NotoSansArabic-Medium.ttf"));
             return view;
         }
     }

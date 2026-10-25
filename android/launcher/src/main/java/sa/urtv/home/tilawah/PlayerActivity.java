@@ -41,6 +41,7 @@ public class PlayerActivity extends Activity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         sa.urtv.home.Digits.init(this);   // the screensaver's «الأرقام» setting
+        sa.urtv.home.UiLanguage.init(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_player);
         cat = Catalog.get(this);
@@ -60,14 +61,14 @@ public class PlayerActivity extends Activity {
         next = findViewById(R.id.next);
         hint = findViewById(R.id.hint);
 
-        Ui.text(kind, "Thmanyah-Medium.otf", 15, R.color.gold);
-        Ui.text(title, "ThmanyahDisplay-Bold.otf", 46, R.color.sand);
-        Ui.text(artist, "Thmanyah-Regular.otf", 22, R.color.dim);
-        Ui.text(live, "Thmanyah-Medium.otf", 14, R.color.gold);
-        Ui.text(pos, "Thmanyah-Regular.otf", 14, R.color.dim);
-        Ui.text(dur, "Thmanyah-Regular.otf", 14, R.color.dim);
-        Ui.text(sleepInfo, "Thmanyah-Medium.otf", 14, R.color.gold);
-        Ui.text(hint, "Thmanyah-Regular.otf", 14, R.color.dim);
+        Ui.text(kind, "NotoSansArabic-Medium.ttf", 15, R.color.gold);
+        Ui.text(title, "NotoSansArabic-Bold.ttf", 46, R.color.sand);
+        Ui.text(artist, "NotoSansArabic-Regular.ttf", 22, R.color.dim);
+        Ui.text(live, "NotoSansArabic-Medium.ttf", 14, R.color.gold);
+        Ui.text(pos, "NotoSansArabic-Regular.ttf", 14, R.color.dim);
+        Ui.text(dur, "NotoSansArabic-Regular.ttf", 14, R.color.dim);
+        Ui.text(sleepInfo, "NotoSansArabic-Medium.ttf", 14, R.color.gold);
+        Ui.text(hint, "NotoSansArabic-Regular.ttf", 14, R.color.dim);
     }
 
     @Override protected void onResume() {
@@ -93,25 +94,25 @@ public class PlayerActivity extends Activity {
         // an adhan is not a track: no skipping and no seeking, only stop/play and the sleep timer
         prev.setVisibility(adhan ? View.GONE : View.VISIBLE);
         next.setVisibility(adhan ? View.GONE : View.VISIBLE);
-        hint.setText(adhan ? R.string.hint_adhan : R.string.hint_player);
+        Ui.set(hint, adhan ? R.string.hint_adhan : R.string.hint_player);
         if (radio) {
             int index = MusicService.currentStation();
-            if (index >= 0 && index < cat.stations.size()) title.setText(cat.stations.get(index).name);
+            if (index >= 0 && index < cat.stations.size()) Ui.set(title, cat.stations.get(index).name);
             artist.setText("");
             kind.setVisibility(View.GONE);
             live.setVisibility(View.VISIBLE);
             progressBlock.setVisibility(View.GONE);
         } else if (source == Prefs.SOURCE_ADHAN) {
-            title.setText(R.string.adhan);
-            artist.setText(MusicService.adhanName() != null ? MusicService.adhanName() : "");
+            Ui.set(title, R.string.adhan);
+            Ui.set(artist, MusicService.adhanName() != null ? MusicService.adhanName() : "");
             kind.setVisibility(View.GONE);
             live.setVisibility(View.GONE);
             progressBlock.setVisibility(View.GONE);
         } else {
-            title.setText("سورة " + cat.surahName(MusicService.currentSurah()));
+            Ui.set(title, "سورة " + cat.surahName(MusicService.currentSurah()));
             int index = MusicService.reciterIndex();
-            if (index >= 0 && index < cat.reciters.size()) artist.setText(cat.reciters.get(index).name);
-            kind.setText(R.string.now_playing);
+            if (index >= 0 && index < cat.reciters.size()) Ui.set(artist, cat.reciters.get(index).name);
+            Ui.set(kind, R.string.now_playing);
             kind.setVisibility(View.VISIBLE);
             live.setVisibility(View.GONE);
             progressBlock.setVisibility(View.VISIBLE);
@@ -124,13 +125,13 @@ public class PlayerActivity extends Activity {
         }
 
         String error = MusicService.currentError();
-        if (error != null) artist.setText(error);
-        else if (MusicService.isBuffering()) artist.setText(R.string.buffering);
+        if (error != null) Ui.set(artist, error);
+        else if (MusicService.isBuffering()) Ui.set(artist, R.string.buffering);
         play.setImageResource(MusicService.isPlaying() ? R.drawable.ic_pause : R.drawable.ic_play);
 
         long left = MusicService.sleepAt() - System.currentTimeMillis();
         if (left > 0) {
-            sleepInfo.setText(getString(R.string.sleep_left, Ui.arabic((int) Math.ceil(left / 60000.0))));
+            Ui.set(sleepInfo, getString(R.string.sleep_left, Ui.arabic((int) Math.ceil(left / 60000.0))));
             sleepInfo.setVisibility(View.VISIBLE);
         } else {
             sleepInfo.setVisibility(View.GONE);
@@ -198,8 +199,8 @@ public class PlayerActivity extends Activity {
                     ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
-        Ui.text((TextView) dialog.findViewById(R.id.sleep_title), "ThmanyahDisplay-Bold.otf", 27, R.color.sand);
-        Ui.text((TextView) dialog.findViewById(R.id.sleep_subtitle), "Thmanyah-Regular.otf", 14, R.color.dim);
+        Ui.text((TextView) dialog.findViewById(R.id.sleep_title), "NotoSansArabic-Bold.ttf", 27, R.color.sand);
+        Ui.text((TextView) dialog.findViewById(R.id.sleep_subtitle), "NotoSansArabic-Regular.ttf", 14, R.color.dim);
 
         LinearLayout items = dialog.findViewById(R.id.sleep_items);
         final String[] labels = {
@@ -208,8 +209,8 @@ public class PlayerActivity extends Activity {
         };
         for (int i = 0; i < labels.length; i++) {
             TextView row = (TextView) getLayoutInflater().inflate(R.layout.item_sleep, items, false);
-            row.setText(labels[i]);
-            Ui.text(row, "Thmanyah-Medium.otf", 20, i == 4 ? R.color.red : R.color.sand);
+            Ui.set(row, labels[i]);
+            Ui.text(row, "NotoSansArabic-Medium.ttf", 20, i == 4 ? R.color.red : R.color.sand);
             final int which = i;
             row.setOnClickListener(v -> {
                 applySleep(which);

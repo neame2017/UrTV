@@ -45,13 +45,14 @@ public class MainActivity extends Activity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         sa.urtv.home.Digits.init(this);   // the screensaver's «الأرقام» setting
+        sa.urtv.home.UiLanguage.init(this);
         setContentView(R.layout.activity_main);
         cat = Catalog.get(this);
         prefs = new Prefs(this);
 
-        Ui.text((TextView) findViewById(R.id.title), "ThmanyahDisplay-Bold.otf", 44, R.color.sand);
-        Ui.text((TextView) findViewById(R.id.tagline), "Thmanyah-Regular.otf", 17, R.color.dim);
-        Ui.text((TextView) findViewById(R.id.hint), "Thmanyah-Regular.otf", 14, R.color.dim);
+        Ui.text((TextView) findViewById(R.id.title), "NotoSansArabic-Bold.ttf", 44, R.color.sand);
+        Ui.text((TextView) findViewById(R.id.tagline), "NotoSansArabic-Regular.ttf", 17, R.color.dim);
+        Ui.text((TextView) findViewById(R.id.hint), "NotoSansArabic-Regular.ttf", 14, R.color.dim);
 
         list = findViewById(R.id.list);
         adapter = new RowsAdapter();
@@ -110,7 +111,7 @@ public class MainActivity extends Activity {
         };
         for (int i = 0; i < tabViews.length; i++) {
             final int which = i;
-            tabViews[i].setTypeface(Ui.font(this, "Thmanyah-Medium.otf"));
+            tabViews[i].setTypeface(Ui.font(this, "NotoSansArabic-Medium.ttf"));
             tabViews[i].setTextSize(19);
             tabViews[i].setOnClickListener(v -> {
                 selectTab(which);
@@ -380,18 +381,18 @@ public class MainActivity extends Activity {
             if (row.header) {
                 TextView header = (TextView) (convertView != null ? convertView
                         : inflater.inflate(R.layout.item_header, parent, false));
-                header.setText(row.title);
-                header.setTypeface(Ui.font(MainActivity.this, "Thmanyah-Medium.otf"));
+                Ui.set(header, row.title);
+                header.setTypeface(Ui.font(MainActivity.this, "NotoSansArabic-Medium.ttf"));
                 return header;
             }
             View view = convertView != null ? convertView : inflater.inflate(R.layout.item_row, parent, false);
             resetRow(view);
             TextView name = view.findViewById(R.id.name);
             TextView detail = view.findViewById(R.id.detail);
-            name.setText(row.title);
-            detail.setText(row.detail);
-            name.setTypeface(Ui.font(MainActivity.this, "Thmanyah-Medium.otf"));
-            detail.setTypeface(Ui.font(MainActivity.this, "Thmanyah-Light.otf"));
+            Ui.set(name, row.title);
+            Ui.set(detail, row.detail);
+            name.setTypeface(Ui.font(MainActivity.this, "NotoSansArabic-Medium.ttf"));
+            detail.setTypeface(Ui.font(MainActivity.this, "NotoSansArabic-Light.ttf"));
             name.setTextColor(getResources().getColor(row.next ? R.color.gold : R.color.sand));
             return view;
         }

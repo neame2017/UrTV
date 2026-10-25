@@ -38,6 +38,29 @@ check("symbols: kinds", syms["2222.SR"] == "sa" and syms["AAPL"] == "us" and sym
 # hours: Tadawul Sun-Thu 10-15 Riyadh; the US 9:30-16:00 New York time (summer 13:30-20:00 UTC, winter 14:30-21:00 UTC)
 def at(y, m, d, h, mi=0):
     return datetime.datetime(y, m, d, h, mi, tzinfo=UTC)
+gold_now = at(2026, 10, 25, 12)
+gold_before = gold_now - datetime.timedelta(hours=24)
+def gold_feed(url):
+    if "intraday" in url:
+        return {"points": [{"t": gold_before.isoformat(), "p": 2300.0}]}
+    return {"spot_usd_oz": 2400.0, "price_as_of": gold_now.isoformat(), "data_state": {"status": "fresh"}}
+mp.fetch_json = gold_feed
+gold, history = mp.gold_karat_quotes(gold_now, [])
+check("gold: four spot karats in SAR per gram", set(gold) == {f"GOLD-SPOT-{k}K" for k in (18, 21, 22, 24)}
+      and abs(gold["GOLD-SPOT-24K"]["p"] - 2400 * 3.75 / 31.1034768) < .001
+      and abs(gold["GOLD-SPOT-18K"]["p"] - gold["GOLD-SPOT-24K"]["p"] * .75) < .001)
+check("gold: change compares with an actual 24-hour observation", gold["GOLD-SPOT-21K"]["v"] is not None
+      and gold["GOLD-SPOT-21K"]["p"] > gold["GOLD-SPOT-21K"]["v"])
+mp.fetch_json = lambda url: {"points": []} if "intraday" in url else gold_feed(url)
+no_history, _ = mp.gold_karat_quotes(gold_now, [])
+check("gold: no historical observation means no invented direction", no_history["GOLD-SPOT-22K"]["v"] is None)
+mp.fetch_json = gold_feed
+stale = False
+try:
+    mp.gold_karat_quotes(gold_now + datetime.timedelta(hours=3), history)
+except ValueError:
+    stale = True
+check("gold: stale spot price is rejected", stale)
 cases = [("sa", at(2026, 10, 25, 7, 5), True, "Sunday 10:05 Riyadh"), ("sa", at(2026, 10, 25, 12, 30), False, "Sunday 15:30 Riyadh"),
          ("sa", at(2026, 10, 23, 8, 0), False, "Friday"), ("sa", at(2026, 10, 24, 8, 0), False, "Saturday"),
          ("us", at(2026, 10, 23, 13, 45), True, "Friday 9:45 New York, summer time"), ("us", at(2026, 10, 23, 13, 15), False, "9:15 New York, summer time"),

@@ -72,6 +72,27 @@ public class DockReceiver extends BroadcastReceiver {
                     + (skipped.isEmpty() ? "" : "\nskipped: " + String.join(", ", skipped)));
                 return;
             }
+            case "sa.urtv.home.SET_ENGLISH_NAMES": {
+                String raw = i.getStringExtra("names");
+                if (raw == null) { setResultData("error: add --es names 'pkg|English name'"); return; }
+                Map<String, String> given = AppNames.givenEnglish(c);
+                List<String> done = new ArrayList<>(), skipped = new ArrayList<>();
+                for (String pair : raw.split(";")) {
+                    int bar = pair.indexOf('|');
+                    if (bar <= 0) { skipped.add(pair); continue; }
+                    String pkg = pair.substring(0, bar).trim(), name = pair.substring(bar + 1).trim();
+                    if (!apps.containsKey(pkg)) { skipped.add(pkg + " (not on the home screen)"); continue; }
+                    if (name.isEmpty()) { given.remove(pkg); done.add(pkg + " (reset)"); continue; }
+                    if (!AppNames.validEnglish(name)) { skipped.add(pkg + " (English, one line, up to " + AppNames.MAX_LEN + " characters)"); continue; }
+                    given.put(pkg, name);
+                    done.add(pkg + " = " + name);
+                }
+                AppNames.saveEnglish(c, given);
+                c.sendBroadcast(new Intent(Dock.CHANGED).setPackage(c.getPackageName()));
+                setResultData("named: " + (done.isEmpty() ? "none" : String.join(", ", done))
+                    + (skipped.isEmpty() ? "" : "\nskipped: " + String.join(", ", skipped)));
+                return;
+            }
             case "sa.urtv.home.CLEAR_NAMES":
                 AppNames.save(c, new java.util.HashMap<String, String>());
                 c.sendBroadcast(new Intent(Dock.CHANGED).setPackage(c.getPackageName()));

@@ -42,6 +42,7 @@ public class DockActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         Digits.init(this);
+        UiLanguage.init(this);
         apps = Dock.launchable(this);
         row.addAll(Dock.shown(this, apps));
 
@@ -74,7 +75,8 @@ public class DockActivity extends Activity {
         list.removeAllViews();
         cards.clear();
         removes.clear();
-        count.setText("المفضلة " + ar(row.size()) + " من " + ar(Dock.MAX));
+        count.setText(UiLanguage.english() ? "Favorites " + ar(row.size()) + " of " + ar(Dock.MAX)
+            : "المفضلة " + ar(row.size()) + " من " + ar(Dock.MAX));
         for (int i = 0; i < row.size(); i++) list.addView(favouriteRow(i), rowParams());
 
         List<String> others = new ArrayList<>(apps.keySet());
@@ -245,11 +247,11 @@ public class DockActivity extends Activity {
 
     private TextView text(String s, float sp, String weight, int color) {
         TextView t = new TextView(this);
-        t.setText(s);
+        t.setText(UiLanguage.of(s));
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
         t.setGravity(Gravity.RIGHT);
-        try { t.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Thmanyah-" + weight + ".otf")); }
+        try { t.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/NotoSansArabic-" + weight + ".ttf")); }
         catch (RuntimeException ignored) { }
         return t;
     }
@@ -266,7 +268,7 @@ public class DockActivity extends Activity {
         return p;
     }
 
-    private void toast(String s) { Toast.makeText(this, s, Toast.LENGTH_SHORT).show(); }
+    private void toast(String s) { Toast.makeText(this, UiLanguage.of(s), Toast.LENGTH_SHORT).show(); }
 
     private int dp(float v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 

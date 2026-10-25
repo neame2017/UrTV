@@ -8,14 +8,14 @@
 <meta name="urtv-build" content="__BUILD__">
 <title>شاشة تلفزيونك</title>
 <style>
-  @font-face{font-family:'Thmanyah';font-weight:300;font-style:normal;font-display:block;src:url("__F_LIGHT__") format("woff2")}
-  @font-face{font-family:'Thmanyah';font-weight:400;font-style:normal;font-display:block;src:url("__F_REGULAR__") format("woff2")}
-  @font-face{font-family:'Thmanyah';font-weight:500;font-style:normal;font-display:block;src:url("__F_MEDIUM__") format("woff2")}
-  /* ﷺ and ﴿﴾ only (2 KB subset of Noto Naskh Arabic, OFL): Thmanyah has no glyph for them */
+  @font-face{font-family:'NotoSansArabic';font-weight:300;font-style:normal;font-display:block;src:url("__F_LIGHT__") format("woff2")}
+  @font-face{font-family:'NotoSansArabic';font-weight:400;font-style:normal;font-display:block;src:url("__F_REGULAR__") format("woff2")}
+  @font-face{font-family:'NotoSansArabic';font-weight:500;font-style:normal;font-display:block;src:url("__F_MEDIUM__") format("woff2")}
+  /* ﷺ and ﴿﴾ only (2 KB subset of Noto Naskh Arabic, OFL): NotoSansArabic has no glyph for them */
   @font-face{font-family:'NotoMarks';font-style:normal;font-weight:400;src:url("__F_MARKS__") format("woff2")}
   /* the Quran text only (verse of the day, Quranic adhkar), with the KFGQPC Uthmani text made for it: assets/fonts/UthmanicHafs-NOTICE.txt */
   @font-face{font-family:'UthmanicHafs';font-weight:400;font-style:normal;font-display:block;src:url("__F_HAFS__") format("woff2")}
-  @font-face{font-family:'ThmanyahDisplay';font-weight:700;font-style:normal;font-display:block;src:url("__F_DISPLAY__") format("woff2")}
+  @font-face{font-family:'NotoSansArabic';font-weight:700;font-style:normal;font-display:block;src:url("__F_DISPLAY__") format("woff2")}
 
   :root{
     --sand:#F6EFE0;
@@ -50,7 +50,7 @@
   html.widget .week.boxes{padding:max(1.7vh,10px) max(1.4vw,14px)}   /* the prayer boxes keep a clear, even distance from the card's edge */
   html,body{
     height:100%;overflow:hidden;background:#040E09;color:var(--sand);
-    font-family:'Thmanyah',system-ui,sans-serif;
+    font-family:'NotoSansArabic',system-ui,sans-serif;
     -webkit-user-select:none;user-select:none;cursor:none;
   }
 
@@ -201,13 +201,13 @@
   .week li.next .dt{color:var(--gold-3)}
   .week li.quote{white-space:normal;display:block;font-size:calc(clamp(17px,1.5vw,29px)*var(--z,1));line-height:1.75;
     border-bottom:none;padding:.4vh 0 0;color:#FFF7E6}
-  /* Thmanyah draws ﴿﴾ as small angle marks: they come from the NotoMarks subset */
+  /* NotoSansArabic draws ﴿﴾ as small angle marks: they come from the NotoMarks subset */
   .week li.quote .orn{font-family:'NotoMarks','Noto Naskh Arabic',serif;color:var(--gold-2);
     font-size:1.05em;padding:0 .15em}
-  /* ﷺ is not in Thmanyah either: NotoMarks, in gold like the verse brackets so it reads as ornament */
+  /* ﷺ is not in NotoSansArabic either: NotoMarks, in gold like the verse brackets so it reads as ornament */
   .week li.quote .saw{font-family:'NotoMarks','Noto Naskh Arabic',serif;color:var(--gold-2);font-size:1.6em;line-height:1;vertical-align:-.1em}
   /* the Uthmanic Hafs face is small for its size and its marks stack high: larger, with more leading */
-  .week li.quote .qt{font-family:'UthmanicHafs','Thmanyah',serif;font-size:1.32em}
+  .week li.quote .qt{font-family:'UthmanicHafs','NotoSansArabic',serif;font-size:1.32em}
   .week li.quote.quran{line-height:1.95}
   .week li.quote.quran.q1{font-size:calc(clamp(13px,1.3vw,25px)*var(--z,1));line-height:1.85}   /* the Hafs face is wide: a lower floor than the other cards' */
   .week li.quote.quran.q2{line-height:1.8}
@@ -224,6 +224,11 @@
   .week li.quote.q4{font-size:calc(clamp(11px,.88vw,17px)*var(--z,1))}   /* the adhkar card's longest, the end of al-Baqara with harakat */
   .week li.quote.hadith.q1{font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1))}
   .week li.quote.hadith.q2{font-size:calc(clamp(13px,1.04vw,20px)*var(--z,1))}
+  .week li.quote.bilingual{direction:rtl;text-align:right;font-size:calc(clamp(12px,1.02vw,19px)*var(--z,1));line-height:1.5}
+  .week li.quote.bilingual.quran .qt{font-size:1.2em}
+  .week li.translation{display:block;direction:ltr;text-align:left;white-space:normal;border:0;padding:.2vh 0 0;
+    font:400 calc(clamp(11px,.88vw,17px)*var(--z,1))/1.35 system-ui,sans-serif;color:#E6DCC4}
+  .week li.src.bilingual{direction:ltr;text-align:left;font-family:system-ui,sans-serif}
   .week li.quote.hadith.q3{font-size:calc(clamp(12px,.94vw,18px)*var(--z,1))}
   .week li.quote .nar{font-size:.66em;color:#B9AE96}
   .week li.quote .nar .saw{font-size:1.45em}
@@ -369,7 +374,7 @@
   html.widget .week.live.lf .micmark svg{fill:#1A1409}
   .clock{
     display:flex;align-items:baseline;justify-content:center;direction:ltr;
-    font-family:'ThmanyahDisplay','Thmanyah',serif;
+    font-family:'NotoSansArabic','NotoSansArabic',serif;
     font-weight:700;
     font-size:clamp(120px,min(17vw,31vh),345px);line-height:.92;letter-spacing:.022em;
     color:#FFFDF6;font-variant-numeric:tabular-nums;
@@ -404,7 +409,7 @@
   }
   .panel .big{
     display:flex;align-items:baseline;gap:.4em;flex-wrap:nowrap;white-space:nowrap;min-width:0;line-height:1.1;
-    font-weight:700;font-family:'ThmanyahDisplay','Thmanyah',serif;font-size:clamp(22px,2vw,42px);color:var(--sand);
+    font-weight:700;font-family:'NotoSansArabic','NotoSansArabic',serif;font-size:clamp(22px,2vw,42px);color:var(--sand);
   }
   .panel .num{color:#FFFCF2;font-size:1.12em;font-variant-numeric:tabular-nums;font-weight:500}
   .panel .unit{font-size:.56em;font-weight:500;color:var(--gold)}
@@ -442,7 +447,7 @@
   .mblock .big > span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
     padding-bottom:.3em;margin-bottom:-.3em;    /* room for the dots under ي, ج… */
     padding-inline:.15em;margin-inline:-.15em;max-width:calc(100% + .3em)}  /* and for a final ر or ن past the ends */
-  .none-week{font-size:clamp(26px,2.5vw,54px);font-weight:700;font-family:'ThmanyahDisplay','Thmanyah',serif;color:#A79C85}
+  .none-week{font-size:clamp(26px,2.5vw,54px);font-weight:700;font-family:'NotoSansArabic','NotoSansArabic',serif;color:#A79C85}
 
   /* A new photo settles in over a minute, then holds still: an endless drift kept the TV redrawing
      the whole screen 60 times a second, for hours. */
@@ -456,7 +461,7 @@
   .markets{text-align:left;flex-shrink:0}
   .wxline{display:flex;align-items:baseline;gap:.5em;justify-content:flex-end;line-height:1.3;
     font-size:clamp(19px,1.86vw,37px);font-weight:500;color:var(--sand)}
-  .wxt{font-family:'ThmanyahDisplay','Thmanyah',serif;font-weight:700;color:#FFFCF2;direction:ltr;
+  .wxt{font-family:'NotoSansArabic','NotoSansArabic',serif;font-weight:700;color:#FFFCF2;direction:ltr;
     font-variant-numeric:tabular-nums}
   .wxd.dust{color:#E8B86A}
   .wxsub{margin-top:.55vh;font-size:clamp(12px,1.06vw,21px);font-weight:300;color:var(--dim);white-space:nowrap}
@@ -471,9 +476,12 @@
   .mblock .sub .old{opacity:.6}
   .mk .delta.up{color:#79D6A0}
   .mk .delta.down{color:#EE8B70}
+  .mk .delta.flat{color:var(--dim)}
   .mk.px .px{font-variant-numeric:tabular-nums;color:#F6EEDC}
   .mk.px .px[data-u]::after{content:' ' attr(data-u);font-size:.7em;color:#A79C85}
   .mk.px.g{display:grid;grid-template-columns:repeat(2,max-content);width:max-content;gap:.5vh 1.6em}
+  .mk.px.karats{grid-template-columns:max-content;gap:.35vh;font-size:clamp(11px,.95vw,18px)}
+  .mk.px.karats .m{gap:.3em}
   .mkup{margin-top:.6vh;text-align:left;font-size:clamp(10px,.82vw,16px);font-weight:300;color:var(--dim);white-space:nowrap}
   .p-prayer.now .big{color:var(--gold-hi);text-shadow:0 0 40px rgba(var(--gold-rgb),.45)}
   .p-prayer.now .label{color:#F1CF8A}
@@ -641,12 +649,13 @@ const CONFIG = {
   ownMode: _Q.get('ownmode') === 'only' ? 'only' : 'mix',
   // digits everywhere: #digits=hindi (١٢٣, the default) or latin (123); anything else = hindi
   digits: _Q.get('digits') === 'latin' ? 'latin' : 'hindi',
+  language: _Q.get('language') === 'en' ? 'en' : 'ar',
   // the look of the card beside the clock: #cardstyle=current|dark1|glass1|dark3|glass3 (anything else = current)
   cardStyle: (v => ['dark1','glass1','dark3','glass3'].includes(v) ? v : 'current')(_Q.get('cardstyle')),
   // the markets at the top left: #markets=tasi,spx,btc (up to 4 of tasi aramco spx btc gold silver xrp; anything else = the default)
   // and #mkstyle=arrows (a ▲/▼ only, the default) or prices (the price and the day's change)
   markets: (l => l.length ? l : ['tasi','spx','btc'])(
-    _list('markets').filter((k, i, a) => ['tasi','aramco','spx','btc','gold','silver','xrp'].includes(k) && a.indexOf(k) === i).slice(0, 4)),
+    _list('markets').filter((k, i, a) => ['tasi','aramco','spx','btc','gold','silver','xrp','gold18','gold21','gold22','gold24'].includes(k) && a.indexOf(k) === i).slice(0, 4)),
   mkStyle: _Q.get('mkstyle') === 'prices' ? 'prices' : 'arrows',
   // the national days (23 September, 22 February): #national=auto (the default) or off
   national: _Q.get('national') === 'off' ? 'off' : 'auto',
@@ -697,8 +706,11 @@ const LS = {
 };
 
 // every number on the screen goes through ar() or a formatter built on NU, so CONFIG.digits decides them all
-const LATIN = CONFIG.digits === 'latin', NU = LATIN ? 'latn' : 'arab';
-const GREG = 'ar-SA-u-ca-gregory-nu-' + NU;
+const EN = CONFIG.language === 'en';
+document.documentElement.lang = EN ? 'en' : 'ar';
+if(EN) document.title = 'UrTV Screen Saver';
+const LATIN = CONFIG.digits === 'latin' || EN, NU = LATIN ? 'latn' : 'arab';
+const GREG = (EN ? 'en-US-u-ca-gregory-nu-' : 'ar-SA-u-ca-gregory-nu-') + NU;
 const AR = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
 const ar = s => LATIN ? String(s) : String(s).replace(/[0-9]/g, d => AR[+d]);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -727,12 +739,64 @@ function tzOffsetMs(ms){
 function fmt12(h, mi){
   h %= 24;   // 24:30 (an Isha after midnight) is 12:30 ص
   const h12 = h % 12 === 0 ? 12 : h % 12;
-  return `${ar(h12)}:${ar(pad(mi))} ${h < 12 ? 'ص' : 'م'}`;
+  return `${ar(h12)}:${ar(pad(mi))} ${h < 12 ? (EN ? 'AM' : 'ص') : (EN ? 'PM' : 'م')}`;
 }
 
 // An identical write still restyles and repaints, so the timers below write only what changed.
-function setText(el, v){ if(el.textContent !== v) el.textContent = v; }
-function setHTML(el, h, force){ if(force || el.__h !== h){ el.__h = h; el.innerHTML = h; return true; } return false; }
+// UI vocabulary only. Religious texts and user-entered task text are never rewritten.
+const UI_EN = {
+  'جدة':'Jeddah','الرياض':'Riyadh','بتوقيت ':'Time in ',
+  'تاسي':'TASI','أرامكو':'Aramco','بيتكوين':'Bitcoin','الذهب':'Gold','الفضة':'Silver','ريبل':'XRP',
+  'ر.س':'SAR','المباريات':'Matches','الطقس':'Weather','الصيام':'Fasting','الأسواق':'Markets',
+  'عدّ تنازلي':'Countdown','الصلاة القادمة':'Next prayer','مواقيت اليوم':'Prayer times today',
+  'الفجر':'Fajr','الشروق':'Sunrise','الظهر':'Dhuhr','العصر':'Asr','المغرب':'Maghrib',
+  'العشاء':'Isha','الجمعة':'Friday','آية اليوم':'Verse of the day','حديث اليوم':'Hadith of the day',
+  'يومك':'Your day','هذا الأسبوع':'This week','مباريات فرقك':'Your teams’ matches',
+  'الأيام القادمة':'Coming days','الساعات القادمة':'Coming hours','المهام':'Tasks',
+  'السنة':'Year','الأسهم':'Stocks','حكمة اليوم':'Wisdom of the day',
+  'أذكار الصباح':'Morning remembrances','أذكار المساء':'Evening remembrances',
+  'حتى الظهر':'Until Dhuhr','حتى المغرب':'Until Maghrib','حتى الفجر':'Until Fajr',
+  'الآيتان من آخر سورة البقرة':'The last two verses of Al-Baqarah',
+  'جارٍ التحميل…':'Loading…','تعذّر التحديث':'Update unavailable',
+  'لا تتوفر بيانات الآن':'No data available','لا مباريات هذا الأسبوع':'No matches this week',
+  'لا جديد هذا الأسبوع':'Nothing new this week','لا مهام اليوم':'No tasks today',
+  'المناسبة القادمة':'Next occasion','اليوم':'Today','غدًا':'Tomorrow','غداً':'Tomorrow',
+  'يومًا':'days','يوم':'days','أيام':'days','بعد':'in','دقيقة':'minutes','دقائق':'minutes',
+  'ساعات':'hours','ساعة':'hour','متوقّع':'estimated','يُتلى الآن':'Now reciting',
+  ' د':' min',' س':' hr',
+  'رمضان':'Ramadan','عيد الفطر':'Eid al-Fitr','عيد الأضحى':'Eid al-Adha',
+  'عشر ذي الحجة':'First ten days of Dhu al-Hijjah','يوم عرفة':'Day of Arafah',
+  'رأس السنة الهجرية':'Islamic New Year','عاشوراء':'Ashura',
+  'مباشر':'Live','انتهت':'Finished','استراحة':'Half-time','مغلق':'Closed',
+  'السوق مغلق':'Market closed','النتيجة النهائية':'Final score',
+  'صافي':'Clear','صافي غالباً':'Mostly clear','غائم جزئياً':'Partly cloudy','غائم':'Cloudy',
+  'ضباب':'Fog','ضباب متجمد':'Freezing fog','رذاذ':'Drizzle','رذاذ كثيف':'Heavy drizzle',
+  'رذاذ متجمد':'Freezing drizzle','مطر خفيف':'Light rain','مطر':'Rain','مطر غزير':'Heavy rain',
+  'مطر متجمد':'Freezing rain','ثلج خفيف':'Light snow','ثلج':'Snow','ثلج كثيف':'Heavy snow',
+  'حبيبات ثلج':'Snow grains','زخات خفيفة':'Light showers','زخات مطر':'Rain showers',
+  'زخات غزيرة':'Heavy showers','زخات ثلج':'Snow showers','عواصف رعدية':'Thunderstorms',
+  'عواصف مصحوبة ببرد':'Thunderstorms with hail','عواصف قوية':'Severe storms',
+  'غبار':'Dust','غبار كثيف':'Heavy dust',
+};
+const UI_EN_KEYS = Object.keys(UI_EN).sort((a,b) => b.length-a.length);
+const uiText = s => !EN ? String(s) : UI_EN_KEYS.reduce((t, ar) => {
+  const safe = ar.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const left = /[؀-ۿ]/.test(ar[0]) ? '(?<![؀-ۿ])' : '';
+  const right = /[؀-ۿ]/.test(ar[ar.length-1]) ? '(?![؀-ۿ])' : '';
+  return t.replace(new RegExp(left + safe + right, 'gu'), UI_EN[ar]);
+}, String(s));
+function localizeUi(root){
+  if(!EN || !root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  while(walker.nextNode()){
+    const n = walker.currentNode, p = n.parentElement;
+    if(!p || p.closest('.quote,.translation,.tafsir,.adf,.task,.src') || !/[ء-ي]/.test(n.nodeValue)) continue;
+    n.nodeValue = uiText(n.nodeValue);
+  }
+}
+function setText(el, v){ const shown = uiText(v); if(el.textContent !== shown) el.textContent = shown; }
+function setHTML(el, h, force){ if(force || el.__h !== h){ el.__h = h; el.innerHTML = h; localizeUi(el); return true; } return false; }
+localizeUi(document.querySelector('.stage'));
 
 function tickClock(){
   const p = riyadhParts();
@@ -744,7 +808,7 @@ function tickClock(){
   tickClock.last = key;
   document.getElementById('ck-h').innerHTML = digits(ar(h12));
   document.getElementById('ck-m').innerHTML = digits(ar(pad(p.mi)));
-  setText(document.getElementById('ck-ap'), p.h < 12 ? 'ص' : 'م');
+  setText(document.getElementById('ck-ap'), p.h < 12 ? (EN ? 'AM' : 'ص') : (EN ? 'PM' : 'م'));
   if(CONFIG.yearStrip) renderYearStrip();   // the day may have turned; the clock's width may have changed
 }
 
@@ -771,11 +835,11 @@ function tickDates(){
   nl.hidden = !nat;
   if(nat) setText(nl, nat.name + ' ' + ar(nat.n) + nat.unit);
   try{
-    let h = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-' + NU,{
+    let h = new Intl.DateTimeFormat((EN ? 'en-US-u-ca-islamic-umalqura-nu-' : 'ar-SA-u-ca-islamic-umalqura-nu-') + NU,{
       timeZone: CONFIG.timezone, weekday:'long', day:'numeric', month:'long', year:'numeric'
     }).format(now);
     h = h.replace(/\s*هـ\s*$/,'').replace(/،\s*$/,'');
-    setText(document.getElementById('hijri'), h + ' هـ');
+    setText(document.getElementById('hijri'), h + (EN ? ' AH' : ' هـ'));
   }catch(e){}
   try{
     setText(document.getElementById('greg'), new Intl.DateTimeFormat(GREG,{
@@ -874,6 +938,10 @@ const UNIT = {
   min: {one:'دقيقة', two:'دقيقتين', few:'دقائق', many:'دقيقة'}
 };
 function qty(n,u){
+  if(EN){
+    const unit = u === UNIT.day ? 'day' : u === UNIT.hour ? 'hour' : 'minute';
+    return `${n} ${unit}${n === 1 ? '' : 's'}`;
+  }
   if(n === 2) return u.two;
   if(n >= 3 && n <= 10) return `${ar(n)} ${u.few}`;
   return `${ar(n)} ${u.many}`;
@@ -882,7 +950,7 @@ function humanRemaining(sec){
   const h = Math.floor(sec/3600), m = Math.floor((sec%3600)/60), out = [];
   if(h) out.push(qty(h,UNIT.hour));
   if(m || !h) out.push(qty(m,UNIT.min));
-  return out.join(' و ');
+  return out.join(EN ? ' and ' : ' و ');
 }
 function shortRemaining(ms){
   const d = Math.floor(ms/86400000), h = Math.floor((ms%86400000)/3600000);
@@ -890,7 +958,7 @@ function shortRemaining(ms){
   if(d) out.push(qty(d,UNIT.day));
   if(h && out.length < 2) out.push(qty(h,UNIT.hour));
   if(!out.length) out.push(qty(Math.max(1, Math.ceil(ms/60000)), UNIT.min));
-  return out.join(' و ');
+  return out.join(EN ? ' and ' : ' و ');
 }
 
 function isFriday(){
@@ -1093,7 +1161,7 @@ const JITTER_MS = (()=>{
 })();
 const periodic = (fn, ms) => setTimeout(() => { fn(); setInterval(fn, ms); }, ms + JITTER_MS);   // the first periodic run is late by the offset
 const later = fn => setTimeout(fn, JITTER_MS);   // the same offset for the refresh at midnight
-const fmtAgo = ms => { const p = riyadhParts(new Date(ms)); return 'آخر تحديث ' + fmt12(p.h, p.mi); };
+const fmtAgo = ms => { const p = riyadhParts(new Date(ms)); return (EN ? 'Updated ' : 'آخر تحديث ') + fmt12(p.h, p.mi); };
 
 // ---------- team names in Arabic ----------
 // 1) built-in table, 2) the Arabic label on Wikidata (cached on the device), 3) transliteration meanwhile
@@ -1153,6 +1221,7 @@ async function wikidataArabic(en, kind){
 
 let arQueue = Promise.resolve();
 function arName(en, kind, id){
+  if(EN) return String(en || '').trim();
   if(kind === 'team' && id && TEAM_BY_ID[id]) return TEAM_BY_ID[id];
   en = String(en || '').trim();
   if(!en || hasArabic(en)) return en;
@@ -1293,7 +1362,7 @@ function matchSlot(id, now, shown){
 // branch data-leagues); the page downloads one file per followed league every 30 minutes and no more: that is the
 // whole cost of a league, however many clubs it has. A game in progress is refreshed by lookupevent.php like a followed
 // team's (loadLive), at most LEAGUE_LIVE_MAX of them at a time.
-const LEAGUE_BASE = 'https://raw.githubusercontent.com/tshi-dev/UrTV/data-leagues/leagues/';
+const LEAGUE_BASE = 'https://raw.githubusercontent.com/neame2017/UrTV/data-leagues/leagues/';
 const LEAGUE_LIVE_MAX = 6;
 const leagueSlug = n => String(n).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');   // team_ids.slug()
 let LEAGUE_DATA = (()=>{ try{ return JSON.parse(localStorage.getItem('leagueData') || '{}') || {}; }catch(e){ return {}; } })();   // name -> its file
@@ -1685,21 +1754,28 @@ const MARKETS = {
   gold:   {name:'الذهب',    sym:'GC=F',     dec:2, unit:'ر.س', mul:GRAM},
   silver: {name:'الفضة',    sym:'SI=F',     dec:2, unit:'ر.س', mul:GRAM},
   xrp:    {name:'ريبل',     cg:'ripple',    dec:2, unit:'$'},
+  gold18: {name:'18K', sym:'GOLD-SPOT-18K', dec:2, unit:'SAR/g'},
+  gold21: {name:'21K', sym:'GOLD-SPOT-21K', dec:2, unit:'SAR/g'},
+  gold22: {name:'22K', sym:'GOLD-SPOT-22K', dec:2, unit:'SAR/g'},
+  gold24: {name:'24K', sym:'GOLD-SPOT-24K', dec:2, unit:'SAR/g'},
 };
 const CG_YAHOO = {bitcoin:'BTC-USD', ripple:'XRP-USD'};   // the file CI keeps holds crypto under Yahoo's pair
 const TICKERS = CONFIG.markets.map(k => Object.assign({key:k, chg:k + '-chg', px:k + '-px'}, MARKETS[k]))
   .map(t => Object.assign(t, {fk: t.sym || CG_YAHOO[t.cg]}));
 const PRICES = CONFIG.mkStyle === 'prices';
+const GOLD_KARATS = CONFIG.markets.length === 4 && CONFIG.markets.every(k => /^gold(18|21|22|24)$/.test(k));
 
 // the default list with arrows is the markup in the page; anything else is made here, before the saved copy is put back
 function buildMarkets(){
   if(!PRICES && TICKERS.map(t => t.key).join() === 'tasi,spx,btc') return;
   const mk = document.querySelector('.mk');
-  mk.className = 'mk' + (PRICES ? ' px' : '') + (PRICES && TICKERS.length > 2 ? ' g' : '');
+  mk.className = 'mk' + (PRICES ? ' px' : '') + (PRICES && TICKERS.length > 2 ? ' g' : '') + (GOLD_KARATS ? ' karats' : '');
   mk.innerHTML = TICKERS.map(t => `<span class="m"><span>${esc(t.name)}</span>`
     + (PRICES ? `<span class="px" id="${t.px}"${t.unit ? ` data-u="${t.unit}"` : ''} hidden></span>` : '')
     + `<span id="${t.chg}" class="delta" hidden></span></span>`).join('');
-  if(PRICES) mk.insertAdjacentHTML('afterend', '<div class="mkup" id="mk-up" hidden></div>');
+  localizeUi(mk);
+  if(PRICES) mk.insertAdjacentHTML('afterend', '<div class="mkup" id="mk-up" hidden></div>'
+    + (GOLD_KARATS ? `<div class="mkup">${EN ? 'Indicative spot · SAR/g · no VAT or making charges' : 'سعر سوق تقديري · ريال/غرام · دون مصنعية أو ضريبة'} · XAUS</div>` : ''));
 }
 
 const _nf = {};
@@ -1821,8 +1897,8 @@ function paintDir(t, up, label){
   const chEl = document.getElementById(t.chg);
   if(up === null || up === undefined){ chEl.style.display='none'; chEl.hidden = true; setText(chEl, ''); return; }
   chEl.hidden = false; chEl.style.display='';
-  setText(chEl, (up ? '▲' : '▼') + (label ? ' ' + label : ''));
-  const cls = 'delta ' + (up ? 'up' : 'down');
+  setText(chEl, (up === 'flat' ? '↔' : up ? '▲' : '▼') + (label ? ' ' + label : ''));
+  const cls = 'delta ' + (up === 'flat' ? 'flat' : up ? 'up' : 'down');
   if(chEl.className !== cls) chEl.className = cls;
 }
 
@@ -1833,11 +1909,11 @@ const saveMarkets = () => { try{ localStorage.setItem(LS.mk, JSON.stringify(MK_L
 function paintMarket(t, price, pct, at){
   const okP = typeof price === 'number' && isFinite(price) && price > 0;
   const okC = typeof pct === 'number' && isFinite(pct);
-  if(okP || okC){ MK_LAST[t.key] = {price: okP ? price : null, pct: okC ? pct : null, at: at || Date.now()}; if(CONFIG.slot === 'markets') renderSlot(); }
-  if(!PRICES){ paintDir(t, okC ? pct >= 0 : null); return; }
+  if(okP || okC){ MK_LAST[t.key] = {price: okP ? price : null, pct: okC ? pct : null, at: at || Date.now(), gold: t.fk.startsWith('GOLD-SPOT-')}; if(CONFIG.slot === 'markets') renderSlot(); }
+  if(!PRICES){ paintDir(t, okC ? (pct === 0 ? 'flat' : pct > 0) : null); return; }
   const px = document.getElementById(t.px);
   if(okP){ px.hidden = false; setText(px, num(price, t.dec)); } else { px.hidden = true; setText(px, ''); }
-  paintDir(t, okC ? pct >= 0 : null, okC ? num(Math.abs(pct), 2) + (LATIN ? '%' : '٪') : '');
+  paintDir(t, okC ? (pct === 0 ? 'flat' : pct > 0) : null, okC ? num(Math.abs(pct), 2) + (LATIN ? '%' : '٪') : '');
 }
 // the dim state of each market and the line under them: «آخر تحديث ٣:١٥ م» (the oldest price that is not current), or «غير محدّث»
 function paintMkUp(){
@@ -1860,7 +1936,7 @@ async function fetchT(url, ms){
 
 // ---- prices. First the file CI keeps (.github/tools/market_prices.py, branch data-markets): one download holds every market and the
 // common stocks, so the TVs do not each ask Yahoo. A symbol that is not in it, or a file older than 3 hours, is asked of Yahoo itself.
-const MARKET_URL = 'https://raw.githubusercontent.com/tshi-dev/UrTV/data-markets/markets/markets.json';
+const MARKET_URL = 'https://raw.githubusercontent.com/neame2017/UrTV/data-markets/markets/markets.json';
 const MARKET_TRUST_MS = 3*3600000;
 let MARKET_FILE = null;   // {updated, quotes: {symbol: {p, v, c, t}}}
 async function loadMarketFile(){
@@ -1871,7 +1947,9 @@ async function loadMarketFile(){
 }
 function fileQuote(sym){
   const q = MARKET_FILE && MARKET_FILE.quotes[sym], at = q ? Date.parse(q.t) : 0;
-  return q && typeof q.p === 'number' && Date.now() - at < MARKET_TRUST_MS ? {p:q.p, v:q.v || null, c:q.c || [], at} : null;
+  const gold = sym.startsWith('GOLD-SPOT-');
+  return q && typeof q.p === 'number' && Number.isFinite(at) && at > 0
+    && (gold || Date.now() - at < MARKET_TRUST_MS) ? {p:q.p, v:q.v || null, c:q.c || [], at} : null;
 }
 
 // Yahoo has no CORS headers: try it directly (works inside the app), then through public CORS gateways. The gateways are for a network
@@ -1928,9 +2006,10 @@ async function directQuote(j){
 const DAY_MS = 86400000;
 function staleMark(v){
   if(!v) return '';
-  const old = v.at && Date.now() - v.at > DAY_MS;
+  const old = v.at && Date.now() - v.at > (v.gold ? 2*3600000 : DAY_MS);
   if(!v.bad && !old) return '';
-  return v.at && !old ? fmtAgo(v.at) : 'غير محدّث';
+  if(v.gold) return (EN ? 'Stale · ' : 'بيانات قديمة · ') + (v.at ? fmtAgo(v.at) : (EN ? 'time unknown' : 'الوقت غير معروف'));
+  return v.at && !old ? fmtAgo(v.at) : (EN ? 'Not updated' : 'غير محدّث');
 }
 
 // One tick for the markets line and the stocks card: each symbol once (a stock on both is asked once), one request at a time.
@@ -1950,7 +2029,7 @@ const loadMarkets = guarded('markets', async function(){
   let asked = 0;
   for(const j of jobs.values()){
     let q = fileQuote(j.key);
-    if(!q){ if(asked++) await sleep(CONFIG.queueGapMs); q = await directQuote(j); }
+    if(!q && !j.key.startsWith('GOLD-SPOT-')){ if(asked++) await sleep(CONFIG.queueGapMs); q = await directQuote(j); }
     for(const t of j.tk){
       if(q) paintMarket(t, typeof q.p === 'number' ? q.p * (t.mul || 1) : null,
         typeof q.pct === 'number' ? q.pct : q.v ? (q.p - q.v) / q.v * 100 : null, q.at);
@@ -2142,7 +2221,7 @@ function todayCard(){
   if(g){
     const live = now >= g.k;
     rows.push(tdRow('المباراة', `<span class="tm">${esc(teamAr(g.ev.strHomeTeam, g.ev.idHomeTeam))}</span> × <span class="tm">${esc(teamAr(g.ev.strAwayTeam, g.ev.idAwayTeam))}</span>`,
-      live ? '<span class="live">مباشر</span>' : 'بعد ' + shortRemaining(g.k - now).split(' و ')[0]));
+      live ? '<span class="live">مباشر</span>' : 'بعد ' + shortRemaining(g.k - now).split(EN ? ' and ' : ' و ')[0]));
   }
   if(CONFIG.tasks.length) rows.push(tdRow('المهمة', esc(CONFIG.tasks[0])));
   const oc = occasionNow();
@@ -2276,6 +2355,19 @@ function renderCard(card, animate, keepSize){
   }
   const wrote = setHTML(ul, rows.join(''), animate);
   if(!keepSize){ card.base = rows.length; card.len0 = card.len || 0; }   // what full size holds: the rows of a page, the length of the text
+  // Keep both complete texts readable. On a narrow screen, advance to the next
+  // shorter verified verse or hadith when their combined card is too tall.
+  if(EN && P === 'verse' && !CONFIG.widget && !keepSize){
+    const bar = document.querySelector('.bottom');
+    for(let step = 0; step < 8; step++){
+      const box = card.el.getBoundingClientRect();
+      if(box.height <= .42 * innerHeight && box.bottom <= bar.getBoundingClientRect().top - 4) break;
+      const previous = card.len;
+      card.maxLen = Math.max(80, Math.floor(previous * .82));
+      renderCard(card, false, true);
+      if(card.len >= previous) break;
+    }
+  }
   if(P === 'matches'){ fillCrests(ul); if(wrote){ shortenRows(ul); fitLive(ul); } }
   if(CONFIG.tafsir) fitTafsir(ul);
   ul.classList.remove('flip');
@@ -2330,7 +2422,8 @@ function yearFacts(){
   const total = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365;
   const day = Math.round((Date.UTC(y, p.mo - 1, p.d) - Date.UTC(y, 0, 1)) / 864e5) + 1;
   const pct = Math.round(100 * day / total);
-  return {y, total, day, pct, text: `اليوم <b>${ar(day)}</b> من ${ar(total)} · ${ar(pct)}${LATIN ? '%' : '٪'}`};
+  return {y, total, day, pct, text: EN ? `Day <b>${ar(day)}</b> of ${ar(total)} · ${ar(pct)}%`
+    : `اليوم <b>${ar(day)}</b> من ${ar(total)} · ${ar(pct)}${LATIN ? '%' : '٪'}`};
 }
 
 // ---- «السنة»: a dot for every day of this Gregorian year (Riyadh time). Drawn again only when the day changes.
@@ -2504,7 +2597,7 @@ async function loadCrests(){
 // ---- «الصلوات في صف»: the five prayers in one row, the next lit, and above it «المغرب بعد ١ س و ٥ د»
 function shortHM(sec){   // «١ س و ٥ د», «٢ س», «٥ د»
   const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60);
-  return [h ? ar(h) + ' س' : '', m || !h ? ar(Math.max(m, 1)) + ' د' : ''].filter(Boolean).join(' و ');
+  return [h ? ar(h) + (EN ? ' hr' : ' س') : '', m || !h ? ar(Math.max(m, 1)) + (EN ? ' min' : ' د') : ''].filter(Boolean).join(EN ? ' and ' : ' و ');
 }
 function prayerRowCard(){
   if(!PRAYERS.length) return {title:'مواقيت اليوم', rows:[]};
@@ -2590,7 +2683,7 @@ function matchRows(card){
       const when = done ? 'انتهت'
         : pending ? ''   // over with no result yet: no score, no «بعد …»
         : now >= t ? '<span class="live">مباشر</span>'
-        : 'بعد ' + shortRemaining(t - now).split(' و ')[0];   // one unit: the date says the rest
+        : 'بعد ' + shortRemaining(t - now).split(EN ? ' and ' : ' و ')[0];   // one unit: the date says the rest
       // the date is always there but for a game under way: the day and time of a game to come or one with no result yet, the day of a finished one
       const date = upcoming || pending ? matchWhen(d) : done ? matchDay(d) : '';
       const dateEl = date ? `<i class="mwhen" data-s="${esc(matchWhenShort(d, now, done))}">${date}</i>` : '';
@@ -2687,22 +2780,71 @@ function pickShort(list, at, len, card){
 function quoteOfDay(card){
   const n = riyadhDayNumber(), half = Math.floor(n / 2);
   if(VERSES.length && n % 2 === 0){
-    const v = pickShort(VERSES, half, x => x.text.length, card);
+    const verses = EN ? VERSES.filter(v => v.english && v.translator) : VERSES;
+    const v = pickShort(verses.length ? verses : VERSES, half, x => x.text.length + (EN ? (x.english || '').length : 0), card);
+    if(EN && v.english) return {title:'Verse of the day', rows:[
+      `<li class="quote quran bilingual${quoteSize(v.text.length)}" lang="ar" dir="rtl"><span class="orn">﴿</span><span class="qt">${esc(v.text)}</span><span class="orn">﴾</span></li>`,
+      `<li class="translation" lang="en">${esc(v.english)}</li>`,
+      `<li class="src bilingual">${esc(v.surah_en)} · ${v.ayah} · ${esc(v.translator)}</li>`]};
     return {title:'آية اليوم', rows:[`<li class="quote quran${v.text.length > 330 ? ' q4' : quoteSize(v.text.length)}"><span class="orn">﴿</span><span class="qt">${esc(v.text)}</span><span class="orn">﴾</span></li>`, `<li class="src">${esc(v.surah)} · ${ar(v.ayah)}</li>`]
       .concat(CONFIG.tafsir && v.tafsir ? [`<li class="tafsir">${esc(v.tafsir)}</li>`] : [])};
   }
-  const h = pickShort(HADITH, half, x => x.parts.reduce((m, [, t]) => m + t.length, 0), card);
+  const translated = EN ? HADITH.filter(x => x.english && x.source_en && x.english.length <= 350) : HADITH;
+  const list = translated.length ? translated : HADITH;
+  const h = pickShort(list, half, x => x.parts.reduce((m, [, t]) => m + t.length, 0) + (EN ? (x.english || '').length : 0), card);
   const saw = s => s.replace(/ﷺ/g, '<span class="saw">ﷺ</span>').replace(/[﴿﴾]/g, m => `<span class="orn">${m}</span>`);
   const body = h.parts.map(([k, t]) => k === 'q' ? `«${saw(esc(t))}»` : `<span class="nar">${saw(esc(t))}</span>`).join(' ');
+  if(EN && h.english) return {title:'Hadith of the day', rows:[
+    `<li class="quote hadith bilingual${quoteSize(h.parts.reduce((n, [, t]) => n + t.length, 0))}" lang="ar" dir="rtl">${body}</li>`,
+    `<li class="translation" lang="en">${esc(h.english)}</li>`,
+    `<li class="src bilingual">${esc(h.source_en)}</li>`]};
   return {title:'حديث اليوم', rows:[`<li class="quote hadith${quoteSize(h.parts.reduce((n, [, t]) => n + t.length, 0))}">${body}</li>`, `<li class="src">${esc(h.source)}</li>`]};
 }
 
 // «حكمة اليوم»: one saying a day by the Riyadh day number, proverbs and classical sayings only (assets/shared/wisdom.json)
 const WISDOM = __WISDOM__;
+// English renderings follow the order of assets/shared/wisdom.json.
+const WISDOM_EN = [
+  'Patience is the key to relief.', 'Choose your neighbor before your home.',
+  'Choose your companion before your journey.', 'A friend is there in times of need.',
+  'No one can scratch your skin like your own nail.', 'Those who strive succeed; those who sow reap.',
+  'Every occasion calls for its own words.', 'Birds of a feather flock together.',
+  'Necessity inspires ingenuity.', 'Once the cause is known, the mystery fades.',
+  'A brother may be dear to you though you share no mother.', 'You wasted the milk in summer.',
+  'Buraqish brought ruin upon herself.', 'I hear the mill clatter, but see no flour.',
+  'One hand cannot clap.', 'Care brings safety; haste brings regret.',
+  'Whoever digs a pit for another falls into it.', 'A hint is enough for a discerning person.',
+  'If you cannot do everything, do what you can.', 'Close the door that lets in the wind, and rest.',
+  'A vessel pours out what it contains.', 'She accused me of her own fault and slipped away.',
+  'Give the bread to the baker, even if he eats half.', 'A test reveals a person’s worth.',
+  'Time is gold.', 'If speech is silver, silence is gold.',
+  'Learning in youth is like carving in stone.', 'Habits formed in youth last into old age.',
+  'The reward of Sinimmar was punishment for his fine work.', 'What seems harmful may prove useful.',
+  'The absent person may have a good excuse.', 'People are like minerals: each has a different nature.',
+  'A right pursued is never lost.', 'There is no smoke without fire.',
+  'Out of sight, out of mind.', 'Too many cooks spoil the dish.',
+  'Greed diminishes what it gathers.', 'The first drop announces the rain.',
+  'Unity is strength.', 'To its mother, even a monkey is a gazelle.',
+  'Give what you have.', 'Every horse stumbles once.',
+  'Every careless word finds someone to repeat it.', 'All that glitters is not gold.',
+  'Necessity is the mother of invention.', 'An ounce of prevention is worth a pound of cure.',
+  'Those who persevere prevail.', 'Character defines a person.',
+  'A promise is a debt.', 'Nature overcomes affectation.',
+  'Actions are repaid in kind.', 'Forbidden things are tempting.',
+  'Live long enough and you will see wonders.', 'Appearances can be deceiving.',
+  'Nothing stays the same forever.', 'Falsehood does not endure.',
+  'A good deed is best done promptly.', 'Caution cannot prevent destiny.',
+  'Practice makes perfect.', 'A discerning person understands a hint.',
+  'Cauterization is the last resort.', 'He tried to apply kohl and blinded her instead.',
+  'A lie has short legs.', 'Those who take their time attain what they seek.',
+  'I have no stake in this matter.'
+];
 function wisdomOfDay(){
   if(!WISDOM.length) return quoteOfDay();
-  const w = WISDOM[riyadhDayNumber() % WISDOM.length];
-  return {title:'حكمة اليوم', rows:[`<li class="quote${quoteSize(w.text.length)}">${esc(w.text)}</li>`, `<li class="src">${esc(w.source)}</li>`]};
+  const i = riyadhDayNumber() % WISDOM.length, w = WISDOM[i];
+  const saying = EN ? WISDOM_EN[i] : w.text;
+  const source = EN ? (w.source === 'مثل عربي' ? 'Arab proverb' : 'Al-Maydani, Majma al-Amthal') : w.source;
+  return {title:EN ? 'Wisdom of the day' : 'حكمة اليوم', rows:[`<li class="quote${quoteSize(saying.length)}">${esc(saying)}</li>`, `<li class="src">${esc(source)}</li>`]};
 }
 
 // «أذكار الصباح والمساء» (from حصن المسلم): only those .github/tools/verify_adhkar.py found in the six books or the Quran.
@@ -2849,7 +2991,7 @@ function pixelShift(){
 
 // Background photos: the hosted set in photos/ (photos/index.json in the repo). A hosted photo is used only
 // once it has loaded; offline, or if it fails, a bundled one is shown, so the screen is never empty.
-const PHOTO_BASE = 'https://raw.githubusercontent.com/tshi-dev/UrTV/master/photos/';
+const PHOTO_BASE = 'https://raw.githubusercontent.com/neame2017/UrTV/master/photos/';
 let REMOTE_BGS = (()=>{ try{ return JSON.parse(localStorage.getItem('photoIndex') || '[]'); }catch(e){ return []; } })();
 
 // The owner's own photos: the app answers OWN_BASE N.jpg (1..CONFIG.own) from its own folder, never from the network.
@@ -3055,10 +3197,10 @@ function restoreSnap(){
     SNAP_LAST = localStorage.getItem(SNAP_KEY);
     const v = JSON.parse(SNAP_LAST || 'null');
     if(!v) return;
-    SNAP_SEL.forEach((q, i) => { const el = document.querySelector(q); if(el && v[0][i]) el.innerHTML = v[0][i]; });
+    SNAP_SEL.forEach((q, i) => { const el = document.querySelector(q); if(el && v[0][i]) { el.innerHTML = v[0][i]; localizeUi(el); } });
     CARDS.forEach((c, i) => {   // a card gets only what its own kind drew
       const saved = v[1][i];
-      if(saved && saved[0] === c.kind){ c.ul.innerHTML = saved[1]; c.hd.innerHTML = saved[2]; fillCrests(c.ul); }
+      if(saved && saved[0] === c.kind){ c.ul.innerHTML = saved[1]; c.hd.innerHTML = saved[2]; localizeUi(c.ul); localizeUi(c.hd); fillCrests(c.ul); }
     });
   }catch(e){}
 }
@@ -3149,10 +3291,10 @@ function boot(){
   setInterval(saveSnap, 60*1000);
   addEventListener('pagehide', saveSnap);
   const wxCity = document.getElementById('wx-city');
-  if(wxCity) wxCity.textContent = CONFIG.city;
+  if(wxCity) setText(wxCity, CONFIG.city);
   const cs = document.getElementById('clock-sub');
-  if(cs) cs.textContent = 'بتوقيت ' + CONFIG.city;
-  document.title = 'شاشة تلفزيونك';
+  if(cs) setText(cs, 'بتوقيت ' + CONFIG.city);
+  document.title = EN ? 'UrTV Screen Saver' : 'شاشة تلفزيونك';
   applyBackground(true);
   loadPhotoIndex().then(() => applyBackground(true));
   setInterval(() => applyBackground(false), 60*1000);

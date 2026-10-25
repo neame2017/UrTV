@@ -48,6 +48,7 @@ public class TasksActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         Digits.init(this);
+        UiLanguage.init(this);
         micFirst = getIntent().getBooleanExtra(EXTRA_MIC, false);
         ScrollView scroll = new ScrollView(this);
         scroll.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
@@ -99,7 +100,7 @@ public class TasksActivity extends Activity {
 
         if (!hasRecognizer()) {
             mic.setVisibility(View.GONE);
-            status.setText("الإدخال الصوتي غير متاح في هذا التلفزيون");
+            status.setText(UiLanguage.of("الإدخال الصوتي غير متاح في هذا التلفزيون"));
         }
     }
 
@@ -130,7 +131,7 @@ public class TasksActivity extends Activity {
     private void render(int focus) {
         boolean ok = load();
         list.removeAllViews();
-        if (!ok) status.setText("تطبيق شاشة التوقف غير مثبّت أو قديم");
+        if (!ok) status.setText(UiLanguage.of("تطبيق شاشة التوقف غير مثبّت أو قديم"));
         else if (texts.isEmpty()) list.addView(text("لا مهام اليوم", 17, "Medium", DIM), right(0));
         View first = null, wanted = null;
         for (int i = 0; i < texts.size(); i++) {
@@ -211,7 +212,7 @@ public class TasksActivity extends Activity {
 
     private void ask(String q, Runnable yesAction) {
         onYes = yesAction;
-        question.setText(q);
+        question.setText(UiLanguage.of(q));
         confirm.setVisibility(View.VISIBLE);
         yes.post(yes::requestFocus);
     }
@@ -235,9 +236,11 @@ public class TasksActivity extends Activity {
     private Intent speechIntent() {
         Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         i.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ar-SA");
+        i.putExtra(RecognizerIntent.EXTRA_LANGUAGE, UiLanguage.english() ? "en-US" : "ar-SA");
         i.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3);
-        i.putExtra(RecognizerIntent.EXTRA_PROMPT, "أضف مهمة … / خلصت … / احذف …");
+        i.putExtra(RecognizerIntent.EXTRA_PROMPT, UiLanguage.english()
+            ? "Add a task … / Finish a task … / Delete a task …"
+            : "أضف مهمة … / خلصت … / احذف …");
         return i;
     }
 
@@ -250,7 +253,7 @@ public class TasksActivity extends Activity {
         try { startActivityForResult(speechIntent(), SPEECH); }
         catch (ActivityNotFoundException e) {
             mic.setVisibility(View.GONE);
-            status.setText("الإدخال الصوتي غير متاح في هذا التلفزيون");
+            status.setText(UiLanguage.of("الإدخال الصوتي غير متاح في هذا التلفزيون"));
         }
     }
 
@@ -266,7 +269,7 @@ public class TasksActivity extends Activity {
             r = TaskVoice.understand(h, texts, dones);
             if (r.kind != TaskVoice.Kind.NONE) break;
         }
-        status.setText("سمعت: " + heard.get(0));
+        status.setText(UiLanguage.of("سمعت: " + heard.get(0)));
         switch (r.kind) {
             case ADD: {
                 final String t = clip(r.text);
@@ -284,13 +287,13 @@ public class TasksActivity extends Activity {
                 break;
             }
             case NO_MATCH:
-                status.setText("ما لقيت مهمة تطابق «" + r.text + "»");
+                status.setText(UiLanguage.of("ما لقيت مهمة تطابق «" + r.text + "»"));
                 break;
             case AMBIGUOUS:
-                status.setText("أكثر من مهمة تطابق «" + r.text + "»، قل جزءاً أوضح");
+                status.setText(UiLanguage.of("أكثر من مهمة تطابق «" + r.text + "»، قل جزءاً أوضح"));
                 break;
             default:
-                status.setText("ما فهمت. قل: أضف مهمة … أو خلصت … أو احذف …");
+                status.setText(UiLanguage.of("ما فهمت. قل: أضف مهمة … أو خلصت … أو احذف …"));
         }
     }
 
@@ -342,11 +345,11 @@ public class TasksActivity extends Activity {
 
     private TextView text(String s, float sp, String weight, int color) {
         TextView t = new TextView(this);
-        t.setText(s);
+        t.setText(UiLanguage.of(s));
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
         t.setGravity(Gravity.RIGHT);
-        try { t.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/Thmanyah-" + weight + ".otf")); }
+        try { t.setTypeface(Typeface.createFromAsset(getAssets(), "fonts/NotoSansArabic-" + weight + ".ttf")); }
         catch (RuntimeException ignored) { }
         return t;
     }
@@ -363,7 +366,7 @@ public class TasksActivity extends Activity {
         return p;
     }
 
-    private void toast(String s) { Toast.makeText(this, s, Toast.LENGTH_SHORT).show(); }
+    private void toast(String s) { Toast.makeText(this, UiLanguage.of(s), Toast.LENGTH_SHORT).show(); }
 
     private int dp(float v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 

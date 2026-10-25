@@ -73,7 +73,7 @@ final class NowCard extends LinearLayout {
     /** what the card says now (MainActivity, on a change and once a minute for the sleep timer) */
     void bind(NowPlaying.State s) {
         playing = s.playing;
-        title.setText(Digits.of(s.title));
+        title.setText(UiLanguage.of(Digits.of(s.title)));
         subText = Digits.of(s.sub);
         hintText = Digits.of(s.hint);
         setContentDescription(Digits.of(s.title + "، " + s.sub));
@@ -89,7 +89,7 @@ final class NowCard extends LinearLayout {
         bg.setColor(focused ? 0xF2FFFFFF : 0x66000000);
         title.setTextColor(focused ? FOCUSED : ON);
         sub.setTextColor(focused ? FOCUSED : DIM);
-        sub.setText(focused ? hintText : subText);   // the keys, while it has the focus
+        sub.setText(UiLanguage.of(focused ? hintText : subText));   // the keys, while it has the focus
         Drawable icon = playing ? pause : play;   // the mark says what OK does: pause while it plays, play while it is paused
         icon.setTint(focused ? FOCUSED : GOLD);
         mark.setImageDrawable(icon);

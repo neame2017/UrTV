@@ -3,6 +3,7 @@ package sa.urtv.home.tilawah;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.widget.TextView;
+import sa.urtv.home.UiLanguage;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,7 +25,7 @@ final class Ui {
 
     static void text(TextView view, String file, int sizeSp, int color) {
         view.setTypeface(font(view.getContext(), file));
-        view.setText(digits(view.getText().toString()));   // a text written in the layout or the strings has the setting's digits too
+        set(view, view.getText().toString());
         view.setTextSize(sizeSp);
         view.setTextColor(view.getResources().getColor(color));
     }
@@ -44,5 +45,13 @@ final class Ui {
     /** "05:12" -> "٠٥:١٢" (or as it is when the digits are latin) */
     static String digits(String s) {
         return sa.urtv.home.DigitsText.convert(s, sa.urtv.home.Digits.latin());   // the screensaver's «الأرقام» setting
+    }
+
+    static void set(TextView view, String value) {
+        view.setText(UiLanguage.of(digits(value)));
+    }
+
+    static void set(TextView view, int resource) {
+        set(view, view.getContext().getString(resource));
     }
 }

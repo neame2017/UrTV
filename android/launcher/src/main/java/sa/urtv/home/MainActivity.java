@@ -63,7 +63,7 @@ import java.util.Map;
  * Plain framework views only (no AndroidX). Network only for hosted wallpapers and the optional card (HomeCard).
  *
  * Adapted from github.com/mihirgupta0900/tv-home (MIT, see android/launcher/LICENSE-tv-home):
- * Arabic text and digits, Hijri date, Thmanyah fonts, the screensaver's gold palette and Saudi photos,
+ * Arabic text and digits, Hijri date, NotoSansArabic fonts, the screensaver's gold palette and Saudi photos,
  * clock on the right, and a pill that opens the screensaver's settings.
  */
 public class MainActivity extends Activity {
@@ -150,6 +150,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle b) {
         super.onCreate(b);
         Digits.init(this);   // the screensaver's «الأرقام» setting, for every number this screen writes
+        UiLanguage.init(this);
         dockApps = loadDock();
         liveTvPkg = getString(R.string.live_tv_package);
         inputPickerPkg = getString(R.string.input_picker_package);
@@ -327,7 +328,7 @@ public class MainActivity extends Activity {
         bottom.addView(dockRow, new LinearLayout.LayoutParams(-1, -2));
 
         appsLabel = text(11, "sans-serif-medium", 0x99FFFFFF);
-        appsLabel.setText("كل التطبيقات");
+        appsLabel.setText(UiLanguage.of("كل التطبيقات"));
         appsLabel.setTextColor(GOLD);
         content.addView(appsLabel, llp(-2, -2, dp(68), dp(8), 0, dp(18)));
 
@@ -453,7 +454,7 @@ public class MainActivity extends Activity {
 
     /** Pill button: its icon only; the one with the focus widens to show its name (see Pill). */
     private Pill pill(String label, int icon) {
-        Pill p = new Pill(this, label, icon, font("sans-serif-medium"));
+        Pill p = new Pill(this, UiLanguage.of(label), icon, font("sans-serif-medium"));
         p.setId(View.generateViewId());
         p.setOnFocusChangeListener((v, has) -> {
             if (has) {
@@ -867,7 +868,7 @@ public class MainActivity extends Activity {
     private void updateSleepPill() {
         if (sleepPill == null) return;
         int left = SleepTimer.minutesLeft(this);
-        sleepPill.setLabel(Digits.of(PillText.sleep(left)));
+        sleepPill.setLabel(UiLanguage.of(Digits.of(PillText.sleep(left))));
         sleepPill.setAccent(left > 0);   // gold while it runs: the minutes show when the pill has the focus
     }
 
@@ -879,7 +880,7 @@ public class MainActivity extends Activity {
 
     private TextView inputRow(String label, Runnable action) {
         TextView r = text(13, "sans-serif", Color.WHITE);
-        r.setText(label);
+        r.setText(UiLanguage.of(label));
         r.setTag(action);
         r.setId(View.generateViewId());
         r.setGravity(Gravity.CENTER_VERTICAL);
@@ -909,6 +910,7 @@ public class MainActivity extends Activity {
         // one read of the screensaver's settings (its ConfigProvider, same signing key) for the whole tick; null zone = it is missing: the TV's own
         ConfigSnapshot cfg = ConfigSnapshot.read(this);
         Digits.remember(this, cfg);   // a change of the setting reaches the next tick
+        if (UiLanguage.remember(this, cfg)) { recreate(); return; }
         String[] zone = cfg.cityZone();
         String tz = zone == null ? tvTz : zone[1];
         Calendar now = ClockZone.at(ms, tz);   // the city's time, like the prayer times beside it
@@ -916,14 +918,15 @@ public class MainActivity extends Activity {
         greetingLine.update(h, cfg);
         int hh = h % 12 == 0 ? 12 : h % 12;   // always 12-hour
         clock.setText(arabicDigits(hh + ":" + String.format(Locale.ROOT, "%02d", now.get(Calendar.MINUTE))));
-        ampm.setText(h < 12 ? "ص" : "م");
+        ampm.setText(h < 12 ? (UiLanguage.english() ? "AM" : "ص") : (UiLanguage.english() ? "PM" : "م"));
         boolean other = zone != null && ClockZone.differs(tvTz, tz, ms);
         zoneLine.setVisibility(other ? View.VISIBLE : View.GONE);
-        if (other) zoneLine.setText(ClockZone.label(zone[0]));
+        if (other) zoneLine.setText(UiLanguage.of(ClockZone.label(zone[0])));
         if (gregFormat == null) {
-            gregFormat = new SimpleDateFormat("d MMMM", new Locale("ar"));
+            gregFormat = new SimpleDateFormat("d MMMM", new Locale(UiLanguage.english() ? "en" : "ar"));
             try {
-                hijriFormat = new android.icu.text.SimpleDateFormat("EEEE، d MMMM y", new android.icu.util.ULocale("ar_SA@calendar=islamic-umalqura"));
+                hijriFormat = new android.icu.text.SimpleDateFormat(UiLanguage.english() ? "EEEE, d MMMM y" : "EEEE، d MMMM y",
+                    new android.icu.util.ULocale(UiLanguage.english() ? "en_US@calendar=islamic-umalqura" : "ar_SA@calendar=islamic-umalqura"));
             } catch (Exception ignored) { }
         }
         if (!tz.equals(formatZone)) {
@@ -933,7 +936,7 @@ public class MainActivity extends Activity {
         }
         String hijri = "";
         try {
-            if (hijriFormat != null) hijri = hijriFormat.format(now.getTime()).replaceAll("\\s*هـ\\s*$", "") + " هـ";
+            if (hijriFormat != null) hijri = hijriFormat.format(now.getTime()).replaceAll("\\s*هـ\\s*$", "") + (UiLanguage.english() ? " AH" : " هـ");
         } catch (Exception ignored) { }
         String greg = gregFormat.format(now.getTime());
         date.setText(arabicDigits(hijri.isEmpty() ? greg : hijri + "  –  " + greg));
@@ -946,7 +949,7 @@ public class MainActivity extends Activity {
     private void updateAdhanBar(ConfigSnapshot cfg) {
         String words = AdhanBar.text(this, cfg);
         adhanBar.setVisibility(words == null ? View.GONE : View.VISIBLE);
-        if (words != null) adhanBar.setText(words);
+        if (words != null) adhanBar.setText(UiLanguage.of(words));
     }
 
     private static String arabicDigits(String s) { return Digits.of(s); }   // the setting's digits (hindi or latin)
@@ -966,7 +969,7 @@ public class MainActivity extends Activity {
                 ssid = wm == null || wm.getConnectionInfo() == null ? null : wm.getConnectionInfo().getSSID();
             }
         } catch (SecurityException ignored) { }
-        wifiPill.setLabel(PillText.network(wired, wifi, ssid));   // shown only while the pill has the focus
+        wifiPill.setLabel(UiLanguage.of(PillText.network(wired, wifi, ssid)));   // shown only while the pill has the focus
     }
 
     // ---------------------------------------------------------------- glow
@@ -1005,7 +1008,7 @@ public class MainActivity extends Activity {
 
     // Hosted photos (photos/index.json in the repo) join the bundled ones. Each is downloaded once into
     // files/photos and reused; offline or on any failure the next bundled photo is shown instead.
-    static final String PHOTO_BASE = "https://raw.githubusercontent.com/tshi-dev/UrTV/master/photos/";
+    static final String PHOTO_BASE = "https://raw.githubusercontent.com/neame2017/UrTV/master/photos/";
     static final long INDEX_MAX_AGE_MS = 24 * 3600 * 1000L;
 
     static final int PHOTO_SET = 5, PHOTO_PERIOD_DAYS = 4;
@@ -1333,14 +1336,14 @@ public class MainActivity extends Activity {
     static final String SAVER_PKG = "sa.urtv.screensaver";
     private final Map<String, Typeface> fonts = new HashMap<>();
 
-    /** Thmanyah from assets/fonts; any old family name maps to the nearest weight. */
+    /** NotoSansArabic from assets/fonts; any old family name maps to the nearest weight. */
     private Typeface font(String family) {
-        String file = family.contains("display") ? "ThmanyahDisplay-Bold"
-                : family.contains("thin") || family.contains("light") ? "Thmanyah-Light"
-                : family.contains("medium") ? "Thmanyah-Medium" : "Thmanyah-Regular";
+        String file = family.contains("display") ? "NotoSansArabic-Bold"
+                : family.contains("thin") || family.contains("light") ? "NotoSansArabic-Light"
+                : family.contains("medium") ? "NotoSansArabic-Medium" : "NotoSansArabic-Regular";
         Typeface tf = fonts.get(file);
         if (tf == null) {
-            try { tf = Typeface.createFromAsset(getAssets(), "fonts/" + file + ".otf"); }
+            try { tf = Typeface.createFromAsset(getAssets(), "fonts/" + file + ".ttf"); }
             catch (RuntimeException e) { tf = Typeface.create("sans-serif", Typeface.NORMAL); }
             fonts.put(file, tf);
         }

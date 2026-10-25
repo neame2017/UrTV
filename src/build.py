@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """src/template.html -> two pages in dist/:
 
-urtv.html           stand-alone: fonts and the bundled photos inlined, works offline from a double-click. Not committed:
-                    it carries Thmanyah, whose licence allows the font only inside a built product.
+urtv.html           stand-alone: fonts and the bundled photos inlined, works offline from a double-click.
+                    Not committed because it duplicates the assets in a large generated file.
 tv.html             for the Android app: same page, but fonts and bundled photos are URLs the app serves from
                     its own assets (PhotoCache.java). 2.2 MB less to parse, so the screensaver starts faster.
 """
@@ -14,14 +14,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FONTS = {
-    "__F_LIGHT__": "Thmanyah-Light.woff2",
-    "__F_REGULAR__": "Thmanyah-Regular.woff2",
-    "__F_MEDIUM__": "Thmanyah-Medium.woff2",
-    "__F_DISPLAY__": "ThmanyahDisplay-Bold.woff2",
+    "__F_LIGHT__": "NotoSansArabic-Light.woff2",
+    "__F_REGULAR__": "NotoSansArabic-Regular.woff2",
+    "__F_MEDIUM__": "NotoSansArabic-Medium.woff2",
+    "__F_DISPLAY__": "NotoSansArabic-Bold.woff2",
     "__F_HAFS__": "UthmanicHafs-v30.woff2",   # the whole font, unmodified: its licence forbids changing it (see UthmanicHafs-NOTICE.txt)
 }
 # tv.html points here for fonts and bundled photos; the app answers from its assets, a browser from GitHub.
-REPO = "https://raw.githubusercontent.com/tshi-dev/UrTV/master/"
+REPO = "https://raw.githubusercontent.com/neame2017/UrTV/master/"
 
 
 TAFSIR_MAX = 130   # characters kept of «التفسير الميسر»; the card shows at most three lines of it
@@ -39,18 +39,24 @@ def verses_for_screen():
     """assets/shared/verses.json as fetched by .github/tools/fetch_verses.py. The text shown is the `uthmani` one, the
     KFGQPC text the Uthmanic Hafs font is made for, kept exactly as fetched (waqf signs included, the font draws them;
     its code points are not normalised or re-ordered) except the ۞ hizb sign the data puts in front of a word. A verse without it is left out: this font gets no other text.
-    The basmala is not part of that text. Surah names are shown plain, without harakat, in Thmanyah."""
+    The basmala is not part of that text. Surah names are shown plain, without harakat, in NotoSansArabic."""
     path = ROOT / "assets/shared/verses.json"
     if not path.is_file():
         return []
+    english = json.loads((ROOT / "assets/shared/verses-en.json").read_text(encoding="utf-8"))
     out = []
     for v in json.loads(path.read_text(encoding="utf-8")):
         if not v.get("uthmani"):
             continue
         # NFC first: the API writes آ as ا + madda, which stripping the harakat would turn into ا (ال عمران)
         name = re.sub("[\u064B-\u065F\u0670\u06D6-\u06ED]", "", unicodedata.normalize("NFC", v["surah"]))
-        name = name.replace("\u0671", "ا")   # ٱ: no glyph in Thmanyah
+        name = name.replace("\u0671", "ا")   # ٱ: no glyph in NotoSansArabic
         e = {"text": " ".join(v["uthmani"].replace("\u06DE", "").split()), "surah": name, "ayah": v["ayah"]}
+        translation = english.get(v["ref"])
+        if translation and translation.get("edition") == "en.sahih" and translation.get("text"):
+            e["english"] = translation["text"]
+            e["surah_en"] = translation["surah"]
+            e["translator"] = translation["translator"]
         if v.get("tafsir"):
             e["tafsir"] = tafsir_for_screen(v["tafsir"])
         out.append(e)
@@ -190,6 +196,10 @@ def hadith_for_screen():
     one from the four Sunan Al-Albani does not grade Sahih, Hasan or Hasan Sahih, or one al-Tirmidhi does not grade
     حسن or صحيح, is not shown."""
     digits = str.maketrans("0123456789", "٠١٢٣٤٥٦٧٨٩")
+    english = json.loads((ROOT / "assets/shared/hadith-en.json").read_text(encoding="utf-8"))
+    book_en = {"صحيح البخاري": "Sahih al-Bukhari", "صحيح مسلم": "Sahih Muslim",
+               "سنن أبي داود": "Sunan Abi Dawud", "جامع الترمذي": "Jami at-Tirmidhi",
+               "سنن النسائي": "Sunan an-Nasa'i", "سنن ابن ماجه": "Sunan Ibn Majah"}
     out = []
     for h in json.loads((ROOT / "assets/shared/hadith.json").read_text(encoding="utf-8")):
         full = h.get("full")
@@ -208,7 +218,15 @@ def hadith_for_screen():
         if any(k == "q" for k, _ in parts) and words <= HADITH_MAX_WORDS:
             grade = tirmidhi_grade(full["text"]) or albani_grade(full.get("grades"))
             source = f"{full['book']} · {str(full['number']).translate(digits)}" + (f" · {grade}" if grade else "")
-            out.append({"parts": parts, "source": source})
+            item = {"parts": parts, "source": source}
+            translated = english.get(f"{full['book']}|{full['number']}")
+            edition = "eng-" + {"صحيح البخاري": "bukhari", "صحيح مسلم": "muslim", "سنن أبي داود": "abudawud",
+                                "جامع الترمذي": "tirmidhi", "سنن النسائي": "nasai", "سنن ابن ماجه": "ibnmajah"}.get(full["book"], "")
+            if translated and translated.get("edition") == edition and translated.get("number") == full["number"] \
+                    and translated.get("book") == full["book"] and translated.get("text"):
+                item["english"] = translated["text"]
+                item["source_en"] = f"{book_en[full['book']]} · {full['number']}"
+            out.append(item)
     return out
 
 
@@ -311,10 +329,9 @@ def main():
         page = html
         for token, font in FONTS.items():
             path = ROOT / "assets/fonts" / font
-            if inline and not path.is_file():   # Thmanyah comes from the private urtv-fonts repo (CI, or a copy you have):
-                page = page.replace(token, "data:,")   # without it this page falls back to the system's Arabic font
-            else:
-                page = page.replace(token, data_uri(path, "font/woff2") if inline else REPO + "assets/fonts/" + font)
+            if not path.is_file():
+                raise FileNotFoundError(path)
+            page = page.replace(token, data_uri(path, "font/woff2") if inline else REPO + "assets/fonts/" + font)
         entries = []
         for bg in bgs:
             u = data_uri(bg_dir / bg["file"], "image/jpeg") if inline else REPO + "assets/backgrounds/" + bg["file"]

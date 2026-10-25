@@ -21,6 +21,7 @@ every run, the closed ones about hourly.
 """
 import datetime
 import json
+import math
 import os
 import re
 import sys
@@ -39,6 +40,11 @@ CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{}?interval=15m&range
 PAUSE_S = float(os.environ.get("MARKETS_PAUSE", "0.4"))   # between two requests
 CLOSED_REFRESH_MIN = 55   # a closed exchange's last close is confirmed about hourly
 CLOSES_MAX = 30
+GOLD_SPOT = "https://xaus.com/api/v1/spot?compact=1"
+GOLD_INTRADAY = "https://xaus.com/api/v1/intraday?symbol=xau&hours=25"
+TROY_OUNCE_GRAMS = 31.1034768
+SAR_PER_USD = 3.75
+GOLD_KARATS = (18, 21, 22, 24)
 
 # Crypto and metals have no exchange hours: asked every run. The page's CoinGecko ids map to Yahoo's pairs.
 ALWAYS_ON = {"GC=F", "SI=F", "BTC-USD", "XRP-USD"}
@@ -57,6 +63,8 @@ def symbols():
     block = re.search(r"const MARKETS = \{(.*?)\n\};", src, re.S).group(1)
     for m in re.finditer(r"(\w+):\s*\{[^}]*?(?:sym:'([^']+)'|cg:'(\w+)')", block):
         sym = m.group(2) or CG_TO_YAHOO[m.group(3)]
+        if sym.startswith("GOLD-SPOT-"):
+            continue  # synthetic quotes below come from spot gold, never Yahoo futures
         out[sym] = "sa" if sym.endswith(".SR") else "always" if sym in ALWAYS_ON else "us"
     tad = re.search(r"const TADAWUL = \{(.*?)\n\};", src, re.S).group(1)
     for code in re.findall(r"'(\d{4})'\s*:", tad):
@@ -121,6 +129,54 @@ def quote(sym, now):
             "t": now.isoformat(timespec="seconds")}
 
 
+def gold_karat_quotes(now, previous_history):
+    """Spot SAR/gram by purity, compared with an observed quote about 24 hours earlier.
+
+    A missing 24-hour observation has no direction. The last 48 hours of real observations
+    bootstrap the comparison if the provider's intraday endpoint is temporarily empty.
+    """
+    spot = fetch_json(GOLD_SPOT)
+    price = spot.get("spot_usd_oz")
+    as_of = datetime.datetime.fromisoformat(str(spot.get("price_as_of", "")).replace("Z", "+00:00"))
+    if not isinstance(price, (int, float)) or not math.isfinite(price) or price <= 0 or as_of.tzinfo is None:
+        raise ValueError("gold spot price or timestamp missing")
+    age = (now - as_of).total_seconds()
+    if not -300 <= age <= 15 * 60 or (spot.get("data_state") or {}).get("status") != "fresh":
+        raise ValueError("gold spot price is stale")
+    points = {}
+    for row in previous_history:
+        try:
+            at = datetime.datetime.fromisoformat(row[0].replace("Z", "+00:00"))
+            if at.tzinfo is not None and isinstance(row[1], (int, float)) and math.isfinite(row[1]) and row[1] > 0:
+                points[at] = row[1]
+        except (IndexError, TypeError, ValueError):
+            continue
+    try:
+        series = fetch_json(GOLD_INTRADAY)
+        for row in series.get("points", []):
+            try:
+                at = datetime.datetime.fromisoformat(str(row["t"]).replace("Z", "+00:00"))
+                if at.tzinfo is not None and isinstance(row["p"], (int, float)) and math.isfinite(row["p"]) and row["p"] > 0:
+                    points[at] = row["p"]
+            except (KeyError, TypeError, ValueError):
+                continue
+    except Exception:
+        pass  # the CI history alone is sufficient after its first 24 hours
+    points[as_of] = price
+    target = as_of - datetime.timedelta(hours=24)
+    older = min(points, key=lambda t: abs((t - target).total_seconds())) if points else None
+    baseline = points[older] if older and abs((older - target).total_seconds()) <= 10 * 60 else None
+    history = [[t.isoformat(), p] for t, p in sorted(points.items())
+               if now - datetime.timedelta(hours=48) <= t <= now + datetime.timedelta(minutes=5)]
+    factor = SAR_PER_USD / TROY_OUNCE_GRAMS
+    quotes = {f"GOLD-SPOT-{k}K": {
+        "p": round(price * factor * k / 24, 4),
+        "v": round(baseline * factor * k / 24, 4) if baseline else None,
+        "c": [], "t": as_of.isoformat(),
+    } for k in GOLD_KARATS}
+    return quotes, history
+
+
 def main(argv):
     everything = "--all" in argv
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -131,6 +187,12 @@ def main(argv):
         except ValueError:
             prev = {}
     quotes = dict(prev)
+    previous_history = []
+    if PREV and (PREV / "markets.json").exists():
+        try:
+            previous_history = json.loads((PREV / "markets.json").read_text(encoding="utf-8")).get("gold_history", [])
+        except ValueError:
+            pass
     report = {"asked": 0, "ok": 0, "failed": [], "notfound": [], "skipped": 0, "stopped": ""}
     asked = 0
     for sym, kind in symbols().items():
@@ -156,6 +218,13 @@ def main(argv):
         if q:
             quotes[sym] = q
             report["ok"] += 1
+    gold_history = previous_history
+    try:
+        gold, gold_history = gold_karat_quotes(now, previous_history)
+        quotes.update(gold)
+        report["ok"] += 1
+    except Exception as e:
+        report["failed"].append(f"spot gold: {e}")
     OUT.mkdir(parents=True, exist_ok=True)
     # "updated" moves only when something was confirmed: the page trusts a file for 3 hours from it
     updated = now.isoformat(timespec="seconds") if report["ok"] else None
@@ -164,7 +233,7 @@ def main(argv):
             updated = json.loads((PREV / "markets.json").read_text(encoding="utf-8")).get("updated")
         except ValueError:
             pass
-    (OUT / "markets.json").write_text(json.dumps({"updated": updated, "quotes": quotes}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    (OUT / "markets.json").write_text(json.dumps({"updated": updated, "quotes": quotes, "gold_history": gold_history}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     (OUT / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False))
     gh = os.environ.get("GITHUB_OUTPUT")

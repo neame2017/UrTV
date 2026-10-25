@@ -6,7 +6,7 @@
 // Network is cut; the photos and fonts the app serves from the device are served from the repo instead,
 // the way PhotoCache.java answers them on the TV.
 import { chromium } from 'playwright';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -27,8 +27,10 @@ async function open(file, hash, { width = 1920, height = 1080, seed = true, net 
   await ctx.route(/^https?:/, r => {
     if (net && net(r)) return;
     const u = r.request().url(), i = u.indexOf('/master/'), rel = i > 0 ? u.slice(i + 8) : '';
-    if (/^(assets\/(backgrounds|fonts)|photos)\//.test(rel))
-      return r.fulfill({ path: path.join(ROOT, rel), headers: { 'Access-Control-Allow-Origin': '*' } });
+    if (/^(assets\/(backgrounds|fonts)|photos)\//.test(rel)) {
+      const local = path.join(ROOT, rel);
+      if (existsSync(local)) return r.fulfill({ path: local, headers: { 'Access-Control-Allow-Origin': '*' } });
+    }
     return r.abort();
   });
   if (seed) await ctx.addInitScript(i => { try { localStorage.setItem('photoIndex', i); } catch (e) {} }, INDEX);
@@ -83,6 +85,48 @@ for (const file of ['urtv.html', 'tv.html']) {
   }
 }
 
+// Four spot-gold grades use the file's real 24-hour reference, with no guessed arrow when it is missing.
+for (const [width, height] of [[1920, 1080], [960, 540]]) {
+  const at = '2026-10-25T12:00:00+00:00';
+  const quotes = Object.fromEntries([18, 21, 22, 24].map((k, i) => [
+    `GOLD-SPOT-${k}K`, {p: 300 + i * 25, v: i === 0 ? null : i === 1 ? 320 : i === 2 ? 360 : 375,
+      c: [], t: at},
+  ]));
+  const net = r => {
+    if (!r.request().url().includes('/data-markets/markets/markets.json')) return false;
+    r.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({updated: at, quotes})});
+    return true;
+  };
+  const {p, ctx, errors} = await open('urtv.html',
+    'city=جدة&language=en&digits=latin&markets=gold18,gold21,gold22,gold24&mkstyle=prices',
+    {width, height, net, now: new Date('2026-10-25T12:30:00Z')});
+  await p.waitForFunction(() => document.getElementById('gold24-px')?.textContent?.length > 0);
+  const result = await p.evaluate(() => ({
+    rows: document.querySelectorAll('.mk.karats .m').length,
+    prices: [18,21,22,24].map(k => document.getElementById(`gold${k}-px`).textContent),
+    directions: [18,21,22,24].map(k => document.getElementById(`gold${k}-chg`).textContent),
+    update: document.getElementById('mk-up').textContent,
+    disclaimer: document.querySelector('.markets').textContent,
+    edge: document.querySelector('.markets').getBoundingClientRect().right,
+  }));
+  check(`gold ${width}x${height}: four SAR/g quotes and 24h directions`,
+    !errors.length && result.rows === 4 && result.prices.every(Boolean)
+    && !result.directions[0] && result.directions[1].includes('▲')
+    && result.directions[2].includes('▼') && result.directions[3].includes('↔'), JSON.stringify(result));
+  check(`gold ${width}x${height}: timestamp, disclaimer and screen bounds`,
+    result.update.includes('Updated') && result.disclaimer.includes('no VAT or making charges')
+    && result.edge <= width + 2, JSON.stringify(result));
+  const stale = await p.evaluate(() => {
+    MK_LAST.gold18.at = Date.now() - 3 * 3600000;
+    paintMkUp();
+    return {line: document.getElementById('mk-up').textContent,
+      old: document.getElementById('gold18-chg').parentNode.classList.contains('old')};
+  });
+  check(`gold ${width}x${height}: stale quote keeps its price and original update time`,
+    stale.old && stale.line.includes('Stale') && result.prices[0], JSON.stringify(stale));
+  await ctx.close();
+}
+
 // ---- every card beside the clock, with sample data where the card needs the network
 const SAMPLE = {
   forecast: () => { FORECAST = [0, 1, 2, 3, 4].map(i => ({ date: cityToday(Date.now() + i * 864e5), code: 2, hi: 37 - i, lo: 24 - i })); },
@@ -112,6 +156,67 @@ for (const [panel, [rows, title]] of Object.entries(EXPECT)) {
   });
   check('card verse: a verse one day, a hadith the next', both === 'آية اليوم,حديث اليوم', both);
   await ctx.close();
+}
+{
+  const {p, ctx, errors} = await open('tv.html', 'panel=verse&language=en&digits=latin');
+  const result = await p.evaluate(() => {
+    const day = riyadhDayNumber();
+    return [day + (day % 2), day + (1 - day % 2)].map(n => {
+      window.riyadhDayNumber = () => n;
+      renderPanel(false);
+      const quote = document.querySelector('#week-list .quote');
+      const translation = document.querySelector('#week-list .translation');
+      return {title: document.getElementById('week-hd').textContent,
+        arabic: !!quote && /[ء-ي]/.test(quote.textContent),
+        english: !!translation && /[A-Za-z]/.test(translation.textContent),
+        source: document.querySelector('#week-list .src')?.textContent || ''};
+    });
+  });
+  check('English verse and hadith retain Arabic, exact English text and attribution',
+    !errors.length && result[0].title === 'Verse of the day' && result[1].title === 'Hadith of the day'
+    && result.every(x => x.arabic && x.english && /[A-Za-z]/.test(x.source)), JSON.stringify(result));
+  await ctx.close();
+}
+
+for (const panel of ['verse','wisdom','adhkar','prayers','forecast','hourly','year','today','stocks','smart','shows','matches']) {
+  const {p, ctx, errors} = await open('urtv.html', 'city=جدة&panel=' + panel + '&language=en&digits=latin');
+  const remaining = await p.evaluate(() => {
+    const walk = document.createTreeWalker(document.querySelector('.stage'), NodeFilter.SHOW_TEXT), found = [];
+    while (walk.nextNode()) {
+      const node = walk.currentNode, parent = node.parentElement;
+      if (!parent || parent.closest('.quote,.translation,.tafsir,.adf,.task,.src')
+          || !/[ء-ي]/.test(node.nodeValue) || getComputedStyle(parent).display === 'none') continue;
+      found.push(node.nodeValue.trim());
+    }
+    return [...new Set(found)].filter(Boolean);
+  });
+  check(`English ${panel}: no Arabic interface text`, !errors.length && !remaining.length, remaining.join(' | '));
+  await ctx.close();
+}
+for (const panel of ['verse', 'wisdom']) {
+  const {p, ctx, errors} = await open('tv.html', `panel=${panel}&language=en&digits=latin`, {width:960,height:540});
+  const result = await p.evaluate(panel => {
+    const day = riyadhDayNumber(), count = panel === 'verse' ? 2 * Math.max(VERSES.length, HADITH.length) : WISDOM.length;
+    const card = document.querySelector('.week'), bad = [];
+    for (let k = 0; k < count; k++) {
+      window.riyadhDayNumber = () => day + k;
+      renderPanel(false);
+      const c = card.getBoundingClientRect(), top = document.querySelector('.top').getBoundingClientRect();
+      const bottom = document.querySelector('.bottom').getBoundingClientRect();
+      const clock = document.querySelector('.clockwrap').getBoundingClientRect();
+      if (c.top < top.bottom || c.bottom > bottom.top - 4 || c.right > clock.left - 4 || c.height > .42 * innerHeight)
+        bad.push({day:k, top:Math.round(c.top), bottom:Math.round(c.bottom), limit:Math.round(bottom.top),
+          height:Math.round(c.height), translation:card.querySelector('.translation')?.textContent.length || 0});
+    }
+    return {count, bad};
+  }, panel);
+  check(`English ${panel}: every daily card fits at 960x540`, !errors.length && !result.bad.length,
+    JSON.stringify({count:result.count, spill:result.bad.slice(0,5), total:result.bad.length}));
+  await ctx.close();
+}
+if (process.env.URTV_ENGLISH_ONLY) {
+  await browser.close();
+  process.exit(failed ? 1 : 0);
 }
 
 // ---- «حكمة اليوم»: one saying a day by the Riyadh day number, every one fits the card, the source is shown
@@ -684,7 +789,7 @@ for (const [hash, want, price] of [['', 'تاسي,S&P 500,بيتكوين', false
   const { p, ctx, errors } = await open('tv.html', hash, { net: marketNet({}) });
   await p.waitForTimeout(500);
   const r = await mk(p), px = await p.evaluate(() => !!document.getElementById('mk-up') || !!document.querySelector('.mk .px'));
-  check(`markets «${hash}»: ${want}, arrows only`, !errors.length && r.map(x => x.n).join() === want && !px && r.every(x => x.ch === null || /^[▲▼]$/.test(x.ch)), JSON.stringify(r) + errors);
+  check(`markets «${hash}»: ${want}, arrows only`, !errors.length && r.map(x => x.n).join() === want && !px && r.every(x => x.ch === null || /^[▲▼↔]$/.test(x.ch)), JSON.stringify(r) + errors);
   await ctx.close();
 }
 for (const [width, height] of [[1920, 1080], [1280, 720], [960, 540]]) {
@@ -2074,7 +2179,10 @@ for (const [width, height] of [[1920, 1080], [1280, 720], [960, 540]]) {
         return h === 'fail' ? r.abort() : void setTimeout(() => r.fulfill({ contentType: 'image/jpeg', body: badgePng }).catch(() => {}), h);
       }
       const i = u.indexOf('/master/'), rel = i > 0 ? u.slice(i + 8) : '';
-      if (/^(assets\/(backgrounds|fonts)|photos)\//.test(rel)) return r.fulfill({ path: path.join(ROOT, rel), headers: { 'Access-Control-Allow-Origin': '*' } });
+      if (/^(assets\/(backgrounds|fonts)|photos)\//.test(rel)) {
+        const local = path.join(ROOT, rel);
+        if (existsSync(local)) return r.fulfill({ path: local, headers: { 'Access-Control-Allow-Origin': '*' } });
+      }
       return r.abort();
     });
     await ctx.addInitScript(i => { localStorage.setItem('photoIndex', i); window.__bg = [];

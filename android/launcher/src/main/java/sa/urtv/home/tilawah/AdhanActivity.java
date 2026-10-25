@@ -28,12 +28,13 @@ public class AdhanActivity extends Activity {
     @Override protected void onCreate(Bundle state) {
         super.onCreate(state);
         sa.urtv.home.Digits.init(this);   // the screensaver's «الأرقام» setting
+        sa.urtv.home.UiLanguage.init(this);
         setContentView(R.layout.activity_adhan);
         prefs = new Prefs(this);
         own = OwnAdhan.exists(this) ? 1 : 0;
 
-        Ui.text((TextView) findViewById(R.id.title), "ThmanyahDisplay-Bold.otf", 40, R.color.sand);
-        Ui.text((TextView) findViewById(R.id.hint), "Thmanyah-Regular.otf", 14, R.color.dim);
+        Ui.text((TextView) findViewById(R.id.title), "NotoSansArabic-Bold.ttf", 40, R.color.sand);
+        Ui.text((TextView) findViewById(R.id.hint), "NotoSansArabic-Regular.ttf", 14, R.color.dim);
 
         list = findViewById(R.id.list);
         adapter = new Voices();
@@ -90,14 +91,14 @@ public class AdhanActivity extends Activity {
             int voice = voiceAt(position);
             TextView name = view.findViewById(R.id.name);
             TextView detail = view.findViewById(R.id.detail);
-            name.setText(Adhan.name(voice));
-            name.setTypeface(Ui.font(AdhanActivity.this, "Thmanyah-Medium.otf"));
+            Ui.set(name, Adhan.name(voice));
+            name.setTypeface(Ui.font(AdhanActivity.this, "NotoSansArabic-Medium.ttf"));
             int playing = prefs.playVoice(AdhanActivity.this);
             boolean chosen = voice == playing;
-            detail.setText(chosen
+            Ui.set(detail, chosen
                     ? getString(R.string.adhan_chosen, Adhan.place(voice))
                     : Adhan.place(voice));
-            detail.setTypeface(Ui.font(AdhanActivity.this, "Thmanyah-Light.otf"));
+            detail.setTypeface(Ui.font(AdhanActivity.this, "NotoSansArabic-Light.ttf"));
             detail.setTextColor(getResources().getColor(chosen ? R.color.gold : R.color.dim));
             return view;
         }

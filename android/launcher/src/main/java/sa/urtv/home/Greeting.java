@@ -47,14 +47,14 @@ final class Greeting {
     void update(int hour, ConfigSnapshot snap) {
         Config s = Config.of(snap);
         if (!s.on) {
-            greeting.setText(hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير");
+            greeting.setText(UiLanguage.of(hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير"));
             weather.setVisibility(android.view.View.GONE);
             return;
         }
         DayParts d = null;
         try { d = DayParts.now(context, snap.fragment); } catch (RuntimeException ignored) { }
-        greeting.setText(d == null ? (hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير")
-                : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha)));
+        greeting.setText(UiLanguage.of(d == null ? (hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير")
+                : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha))));
 
         SharedPreferences sp = prefs();
         long at = sp.getLong("at", 0);
@@ -62,7 +62,7 @@ final class Greeting {
         if (sameCity && sp.contains("code") && System.currentTimeMillis() - at < STALE_MS && d != null) {
             String line = GreetingText.weather(sp.getInt("code", -1), sp.getFloat("dust", 0), s.city, sp.getFloat("temp", 0), s.latin)
                     + "\n" + GreetingText.sun(d.sunLabel, d.sunClock, s.latin);
-            weather.setText(line);
+            weather.setText(UiLanguage.of(line));
             weather.setVisibility(android.view.View.VISIBLE);
         } else {
             weather.setVisibility(android.view.View.GONE);   // offline, or not asked yet: the greeting alone

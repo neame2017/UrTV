@@ -42,12 +42,14 @@ public class SettingsActivity extends Activity {
     private Prefs prefs;
     private LinearLayout list;
 
-    /** Arabic locale for this screen, so every dialog title, list and button is laid out right-to-left. */
+    /** Follow the app language independently of the TV system language. */
     @Override
     protected void attachBaseContext(android.content.Context base) {
         android.content.res.Configuration c = new android.content.res.Configuration(base.getResources().getConfiguration());
-        c.setLocale(new java.util.Locale("ar"));
-        c.setLayoutDirection(new java.util.Locale("ar"));
+        String language = base.getSharedPreferences("settings", MODE_PRIVATE).getString("language", "ar");
+        java.util.Locale locale = new java.util.Locale("en".equals(language) ? "en" : "ar");
+        c.setLocale(locale);
+        c.setLayoutDirection(locale);
         super.attachBaseContext(base.createConfigurationContext(c));
     }
 
@@ -59,7 +61,7 @@ public class SettingsActivity extends Activity {
         // the same design as the «تلاوة وأذان» screens: the dark green, a dimmed photo of ours behind, glass rows, the hint at the bottom
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(0xFF040E09);
-        root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        root.setLayoutDirection("en".equals(prefs.language()) ? View.LAYOUT_DIRECTION_LTR : View.LAYOUT_DIRECTION_RTL);
         Bitmap photo = photo(2);
         if (photo != null) {
             ImageView bg = new ImageView(this);
@@ -73,7 +75,7 @@ public class SettingsActivity extends Activity {
         FrameLayout frame = new FrameLayout(this);
         list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
-        list.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        list.setLayoutDirection("en".equals(prefs.language()) ? View.LAYOUT_DIRECTION_LTR : View.LAYOUT_DIRECTION_RTL);
         list.setPadding(dp(8), dp(40), dp(8), dp(16));
         int width = Math.min(getResources().getDisplayMetrics().widthPixels - dp(144), dp(1100));
         frame.addView(list, new FrameLayout.LayoutParams(width, -2, Gravity.CENTER_HORIZONTAL));
@@ -82,10 +84,11 @@ public class SettingsActivity extends Activity {
         column.setOrientation(LinearLayout.VERTICAL);
         column.addView(scroll, new LinearLayout.LayoutParams(-1, 0, 1f));
         TextView hint = new TextView(this);
-        hint.setText("يمين/يسار وأعلى/أسفل بين الصفوف  •  اختيار لفتح الصف  •  رجوع للخروج");
+        hint.setText("en".equals(prefs.language()) ? "Use arrows to move  •  Select to open  •  Back to exit"
+            : "يمين/يسار وأعلى/أسفل بين الصفوف  •  اختيار لفتح الصف  •  رجوع للخروج");
         hint.setTextColor(0xFFC6BBA4);
         hint.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        hint.setTypeface(font("Thmanyah-Regular"));
+        hint.setTypeface(font("NotoSansArabic-Regular"));
         hint.setGravity(Gravity.CENTER);
         hint.setPadding(dp(72), dp(10), dp(72), dp(18));
         column.addView(hint, new LinearLayout.LayoutParams(-1, -2));
@@ -102,22 +105,23 @@ public class SettingsActivity extends Activity {
 
     private void render() {
         latinDigits = DigitsText.isLatin(prefs.digits());
+        englishUi = "en".equals(prefs.language());
         list.removeAllViews();
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
         head.setGravity(Gravity.CENTER_VERTICAL);
         head.setPadding(0, 0, 0, dp(14));
         TextView title = new TextView(this);
-        title.setText("تلفزيونك");
+        title.setText(conv("تلفزيونك"));
         title.setTextColor(0xFFF6EFE0);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
-        title.setTypeface(font("ThmanyahDisplay-Bold"));
+        title.setTypeface(font("NotoSansArabic-Bold"));
         head.addView(title);
         TextView sub = new TextView(this);
-        sub.setText("إعدادات شاشة التوقف");
+        sub.setText(conv("إعدادات شاشة التوقف"));
         sub.setTextColor(0xFFC6BBA4);
         sub.setTextSize(TypedValue.COMPLEX_UNIT_SP, 17);
-        sub.setTypeface(font("Thmanyah-Regular"));
+        sub.setTypeface(font("NotoSansArabic-Regular"));
         LinearLayout.LayoutParams sp0 = new LinearLayout.LayoutParams(-2, -2);
         sp0.setMarginStart(dp(20));
         head.addView(sub, sp0);
@@ -140,8 +144,11 @@ public class SettingsActivity extends Activity {
             new Runnable() { public void run() { pickMany("events", "رياضات أخرى", Prefs.EVENTS, "بدون اختيار = بدون"); } });
 
         header("العرض");
+        row("اللغة", "en".equals(prefs.language()) ? "English" : "العربية", R.drawable.ic_language,
+            new Runnable() { public void run() { pickLanguage(); } });
         noConv = true;
-        row("الأرقام", Prefs.digitsLabel(prefs.digits()), R.drawable.ic_language,
+        row(englishUi ? "Digits" : "الأرقام", englishUi ? ("latin".equals(prefs.digits()) ? "Latin 123" : "Arabic-Indic ١٢٣")
+            : Prefs.digitsLabel(prefs.digits()), R.drawable.ic_language,
             new Runnable() { public void run() { pickDigits(); } });
         noConv = false;
         row("تنبيه قبل الأذان", prefs.adhanBar() ? "يعمل · شريط في أعلى الشاشة آخر ١٠ دقائق، ثم حتى الإقامة" : "متوقف", R.drawable.ic_eye,
@@ -540,13 +547,13 @@ public class SettingsActivity extends Activity {
                 n.setText(conv(labels[i]));
                 n.setTextColor(0xFFF6EFE0);
                 n.setTextSize(TypedValue.COMPLEX_UNIT_SP, 19);
-                n.setTypeface(font("Thmanyah-Medium"));
+                n.setTypeface(font("NotoSansArabic-Medium"));
                 r.addView(n);
                 TextView a = new TextView(SettingsActivity.this);
                 a.setText(conv(about[i]));
                 a.setTextColor(0xFFC6BBA4);
                 a.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
-                a.setTypeface(font("Thmanyah-Regular"));
+                a.setTypeface(font("NotoSansArabic-Regular"));
                 r.addView(a);
                 return r;
             }
@@ -763,12 +770,22 @@ public class SettingsActivity extends Activity {
         String[] labels = new String[Prefs.DIGITS.length];
         int sel = 0;
         for (int i = 0; i < labels.length; i++) {
-            labels[i] = Prefs.DIGITS[i][1];
+            labels[i] = englishUi ? (i == 0 ? "Arabic-Indic ١٢٣" : "Latin 123") : Prefs.DIGITS[i][1];
             if (Prefs.DIGITS[i][0].equals(prefs.digits())) sel = i;
         }
-        new Dlg(this).raw().setTitle("الأرقام")
+        new Dlg(this).raw().setTitle(englishUi ? "Digits" : "الأرقام")
             .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setDigits(Prefs.DIGITS[i][0]); d.dismiss(); render(); })
             .show();
+    }
+
+    private void pickLanguage() {
+        String[] labels = {"Arabic", "English"};
+        new Dlg(this).raw().setTitle(englishUi ? "Language" : "اللغة")
+            .setSingleChoiceItems(labels, "en".equals(prefs.language()) ? 1 : 0, (d, i) -> {
+                prefs.setLanguage(i == 1 ? "en" : "ar");
+                d.dismiss();
+                recreate();
+            }).show();
     }
 
     private void pickNational() {
@@ -913,9 +930,10 @@ public class SettingsActivity extends Activity {
 
     /** the «الأرقام» setting as this screen draws it (read at every render): every number and label goes through conv() */
     private static volatile boolean latinDigits;
+    private static volatile boolean englishUi;
     private boolean noConv;   // the «الأرقام» row itself says «هندية ١٢٣» and «عربية 123»: both stay as they are
 
-    private static String conv(String s) { return DigitsText.convert(s, latinDigits); }
+    private static String conv(String s) { return DigitsText.convert(englishUi ? EnglishText.of(s) : s, latinDigits); }
 
     private static String arabicNum(int n) { return conv(String.valueOf(n)); }
 
@@ -937,7 +955,7 @@ public class SettingsActivity extends Activity {
 
     private final java.util.Map<String, Typeface> fonts = new java.util.HashMap<>();
 
-    /** Thmanyah, shared with the launcher's assets; falls back to the system font. */
+    /** NotoSansArabic, shared with the launcher's assets; falls back to the system font. */
     private Typeface font(String name) {
         Typeface tf = fonts.get(name);
         if (tf == null) {
@@ -948,7 +966,7 @@ public class SettingsActivity extends Activity {
         return tf;
     }
 
-    /** the dialogs of this screen: the glass theme (styles.xml), and Thmanyah on every word of them once they show */
+    /** the dialogs of this screen: the glass theme (styles.xml), and NotoSansArabic on every word of them once they show */
     private static final class Dlg extends AlertDialog.Builder {
         private final SettingsActivity owner;
         private boolean raw;   // its words keep their own digits (the «الأرقام» picker shows both kinds)
@@ -968,11 +986,11 @@ public class SettingsActivity extends Activity {
 
     void dress(AlertDialog d, boolean raw) { if (d.getWindow() != null) dressView(d.getWindow().getDecorView(), raw); }
 
-    /** Thmanyah on every text under this view, and on the ones that come later (a list makes its rows when it is shown) */
+    /** NotoSansArabic on every text under this view, and on the ones that come later (a list makes its rows when it is shown) */
     private void dressView(View v, final boolean raw) {
         if (v instanceof TextView) {
             TextView t = (TextView) v;
-            t.setTypeface(font("Thmanyah-Medium"));
+            t.setTypeface(font("NotoSansArabic-Medium"));
             if (!raw && !(v instanceof EditText)) {   // the numbers of the dialogs follow the «الأرقام» setting too
                 String was = t.getText().toString(), now = conv(was);
                 if (!now.equals(was)) t.setText(now);
@@ -1011,7 +1029,7 @@ public class SettingsActivity extends Activity {
         t.setText(conv(text));
         t.setTextColor(0xFFD6AF6B);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        t.setTypeface(font("Thmanyah-Medium"));
+        t.setTypeface(font("NotoSansArabic-Medium"));
         t.setPadding(dp(10), dp(18), dp(10), dp(6));
         list.addView(t);
     }
@@ -1022,7 +1040,7 @@ public class SettingsActivity extends Activity {
         t.setText(conv(android.text.TextUtils.join("\n", lines)));
         t.setTextColor(0xFFC6BBA4);
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        t.setTypeface(font("Thmanyah-Regular"));   // a version line has digits and Latin letters: Thmanyah has them
+        t.setTypeface(font("NotoSansArabic-Regular"));   // a version line has digits and Latin letters: NotoSansArabic has them
         t.setLineSpacing(dp(4), 1f);
         t.setGravity(Gravity.START);
         t.setTextDirection(View.TEXT_DIRECTION_RTL);
@@ -1082,7 +1100,7 @@ public class SettingsActivity extends Activity {
         name.setText(noConv ? label : conv(label));
         name.setTextColor(0xFFF6EFE0);
         name.setTextSize(TypedValue.COMPLEX_UNIT_SP, 21);
-        name.setTypeface(font("Thmanyah-Medium"));
+        name.setTypeface(font("NotoSansArabic-Medium"));
         name.setSingleLine(true);
         texts.addView(name);
         final TextView val = new TextView(this);
@@ -1090,7 +1108,7 @@ public class SettingsActivity extends Activity {
             val.setText(noConv ? value : conv(value));
             val.setTextColor(0xFFC6BBA4);
             val.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            val.setTypeface(font("Thmanyah-Regular"));
+            val.setTypeface(font("NotoSansArabic-Regular"));
             val.setSingleLine(true);
             val.setEllipsize(android.text.TextUtils.TruncateAt.END);
             texts.addView(val);
@@ -1121,7 +1139,7 @@ public class SettingsActivity extends Activity {
 
     private void ask(String hint, final Text then) {
         final EditText in = new EditText(this);
-        in.setHint(hint);
+        in.setHint(conv(hint));
         in.setSingleLine(true);
         in.setInputType(InputType.TYPE_CLASS_TEXT);
         new Dlg(this).setTitle("بحث").setView(in)
