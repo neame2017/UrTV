@@ -7,6 +7,7 @@ tv.html             for the Android app: same page, but fonts and bundled photos
                     its own assets (PhotoCache.java). 2.2 MB less to parse, so the screensaver starts faster.
 """
 import base64
+import hashlib
 import json
 import re
 import unicodedata
@@ -223,7 +224,9 @@ def hadith_for_screen():
             edition = "eng-" + {"صحيح البخاري": "bukhari", "صحيح مسلم": "muslim", "سنن أبي داود": "abudawud",
                                 "جامع الترمذي": "tirmidhi", "سنن النسائي": "nasai", "سنن ابن ماجه": "ibnmajah"}.get(full["book"], "")
             if translated and translated.get("edition") == edition and translated.get("number") == full["number"] \
-                    and translated.get("book") == full["book"] and translated.get("text"):
+                    and translated.get("book") == full["book"] and translated.get("text") \
+                    and translated.get("hadithnumber") and translated.get("arabic_sha256") \
+                    == hashlib.sha256(full["text"].encode("utf-8")).hexdigest():
                 item["english"] = translated["text"]
                 item["source_en"] = f"{book_en[full['book']]} · {full['number']}"
             out.append(item)
