@@ -195,7 +195,8 @@ for (const [panel, [rows, title]] of Object.entries(EXPECT)) {
 }
 
 for (const panel of ['verse','wisdom','adhkar','prayers','forecast','hourly','year','today','stocks','smart','shows','matches']) {
-  const {p, ctx, errors} = await open('urtv.html', 'city=جدة&panel=' + panel + '&language=en&digits=latin');
+  const {p, ctx, errors} = await open('urtv.html', 'city=جدة&panel=' + panel + '&language=en&digits=latin',
+    {now:'2026-10-22T13:40:00Z'});
   const remaining = await p.evaluate(() => {
     const walk = document.createTreeWalker(document.querySelector('.stage'), NodeFilter.SHOW_TEXT), found = [];
     while (walk.nextNode()) {
@@ -2529,8 +2530,21 @@ const barAt = (p, day, hhmm, ss = '00') => p.evaluate(([iso, times]) => {
   window.Date = class extends R { constructor(...a) { a.length ? super(...a) : super(T); } static now() { return T; } };
   eval(times); tickPrayer();
   const b = document.getElementById('adbar'), cs = getComputedStyle(b), r = b.getBoundingClientRect();
-  return { hidden: b.hidden || cs.display === 'none', text: b.textContent, top: r.top, h: r.height, w: r.width, panel: document.getElementById('prayer-count').textContent };
+  return { hidden: b.hidden || cs.display === 'none', text: b.textContent, top: r.top, h: r.height, w: r.width,
+    panel: document.getElementById('prayer-count').textContent, label: document.getElementById('prayer-label').textContent,
+    name: document.getElementById('prayer-name').textContent };
 }, [`${day}T${hhmm}:${ss}+03:00`, ADHAN_TIMES]);
+{
+  const {p, ctx, errors} = await open('tv.html', 'panel=prayers&language=en&digits=latin',
+    {now:'2026-10-22T13:40:00Z'});
+  const before = await barAt(p, '2026-10-22', '17:37');
+  const waiting = await barAt(p, '2026-10-22', '17:50', '12');
+  check('English Adhan and Iqama windows use English labels and countdowns', !errors.length
+    && before.text === 'Adhan in 8 minutes' && before.label === 'Next prayer'
+    && waiting.text === 'Iqama in 5 minutes' && waiting.panel === 'Iqama in 5 minutes'
+    && waiting.label === 'Now' && waiting.name === 'Maghrib', JSON.stringify({before, waiting, errors}));
+  await ctx.close();
+}
 for (const [width, height] of [[1920, 1080], [1280, 720], [960, 540]]) {
   for (const digits of ['hindi', 'latin']) {
     const { p, ctx, errors } = await open('tv.html', `panel=prayers&digits=${digits}`, { width, height });
