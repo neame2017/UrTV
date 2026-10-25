@@ -178,6 +178,22 @@ for (const [panel, [rows, title]] of Object.entries(EXPECT)) {
   await ctx.close();
 }
 
+{
+  const {p, ctx, errors} = await open('tv.html', 'city=جدة&language=en&digits=latin');
+  const hijri = await p.evaluate(() => {
+    const RealDate = Date;
+    window.Date = class extends RealDate {
+      constructor(...args){ super(...(args.length ? args : ['2026-10-25T12:00:00Z'])); }
+      static now(){ return RealDate.parse('2026-10-25T12:00:00Z'); }
+    };
+    tickDates();
+    return document.getElementById('hijri').textContent;
+  });
+  check('English Hijri date names the Umm al-Qura month without a Gregorian era',
+    !errors.length && /Sunday, 14 Jumada I 1448 AH/.test(hijri) && !/\bBC\b/.test(hijri), hijri);
+  await ctx.close();
+}
+
 for (const panel of ['verse','wisdom','adhkar','prayers','forecast','hourly','year','today','stocks','smart','shows','matches']) {
   const {p, ctx, errors} = await open('urtv.html', 'city=جدة&panel=' + panel + '&language=en&digits=latin');
   const remaining = await p.evaluate(() => {

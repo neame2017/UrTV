@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261025104040">
+<meta name="urtv-build" content="20261025105002">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'NotoSansArabic';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/neame2017/UrTV/master/assets/fonts/NotoSansArabic-Light.woff2") format("woff2")}
@@ -841,10 +841,26 @@ function tickDates(){
   nl.hidden = !nat;
   if(nat) setText(nl, nat.name + ' ' + ar(nat.n) + nat.unit);
   try{
-    let h = new Intl.DateTimeFormat((EN ? 'en-US-u-ca-islamic-umalqura-nu-' : 'ar-SA-u-ca-islamic-umalqura-nu-') + NU,{
-      timeZone: CONFIG.timezone, weekday:'long', day:'numeric', month:'long', year:'numeric'
-    }).format(now);
-    h = h.replace(/\s*هـ\s*$/,'').replace(/،\s*$/,'');
+    let h;
+    if(EN){
+      // Android WebView's ICU can render an Umm al-Qura month using a Gregorian
+      // name (and even append "BC"). Read the calendar numbers, then name the
+      // month ourselves; the weekday comes from the Gregorian calendar.
+      const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura-nu-latn',{
+        timeZone: CONFIG.timezone, day:'numeric', month:'numeric', year:'numeric'
+      }).formatToParts(now);
+      const get = kind => Number(parts.find(p => p.type === kind)?.value);
+      const months = ['Muharram','Safar','Rabi I','Rabi II','Jumada I','Jumada II',
+        'Rajab','Shaban','Ramadan','Shawwal','Dhu al-Qidah','Dhu al-Hijjah'];
+      const month = get('month'), day = get('day'), year = get('year');
+      const weekday = new Intl.DateTimeFormat('en-US',{timeZone:CONFIG.timezone,weekday:'long'}).format(now);
+      h = month >= 1 && month <= 12 && day >= 1 && day <= 30 && year > 1000
+        ? `${weekday}, ${day} ${months[month-1]} ${year}` : '';
+    }else{
+      h = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-' + NU,{
+        timeZone: CONFIG.timezone, weekday:'long', day:'numeric', month:'long', year:'numeric'
+      }).format(now).replace(/\s*هـ\s*$/,'').replace(/،\s*$/,'');
+    }
     setText(document.getElementById('hijri'), h + (EN ? ' AH' : ' هـ'));
   }catch(e){}
   try{
