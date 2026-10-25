@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261025094350">
+<meta name="urtv-build" content="20261025101131">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'NotoSansArabic';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/neame2017/UrTV/master/assets/fonts/NotoSansArabic-Light.woff2") format("woff2")}
@@ -264,6 +264,7 @@
   .week li.yr .halo{fill:rgb(var(--gold-rgb))}
   .week li.yr .yt{font-size:.74em;color:#B9AE96;line-height:1.4}
   .week li.yr .yt b{font-weight:500;color:var(--gold-3)}
+  @media(max-width:1000px){html.cs-dark3 .week li.yr,html.cs-glass3 .week li.yr{padding-bottom:12px}}
   @media (prefers-reduced-motion:no-preference){
     .week li.yr.fill .r{animation:yrIn .7s ease both;animation-delay:calc(var(--i) * 70ms)}
     @keyframes yrIn{from{opacity:0}to{opacity:1}}
