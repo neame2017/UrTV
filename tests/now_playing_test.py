@@ -63,8 +63,8 @@ check("screen card: the page gets one call, window.UrtvNative.nowPlaying(), on t
       and 'if (screen) w.addJavascriptInterface(new NowPlayingBridge(c), "UrtvNative")' in screenview)
 check("screen card: the page asks once at the start and then once a minute, no faster",
       "nowPlayingTick();\n  setInterval(nowPlayingTick, 60*1000);" in (ROOT / "src/template.html").read_text(encoding="utf-8"))
-check("NowCard: a pill's height (Pill.HEIGHT) is kept by the row, not the card; its focus shows the keys on its second line",
-      "sub.setText(focused ? hintText : subText)" in card and "playing ? pause : play" in card)
+check("NowCard: a pill's height (Pill.HEIGHT) is kept by the row; its focused hint is localized",
+      "sub.setText(UiLanguage.of(focused ? hintText : subText))" in card and "playing ? pause : play" in card)
 
 if not shutil.which("javac"):
     print("SKIP now playing text: no javac here")
